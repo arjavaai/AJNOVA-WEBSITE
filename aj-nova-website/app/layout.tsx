@@ -15,7 +15,12 @@ export const metadata: Metadata = {
   title: "AJ NOVA | Future of Admissions",
   description:
     "AI-powered admissions, personalized counselling, and a 97% visa success rate. Your future in Germany starts here.",
-    generator: 'v0.app'
+  generator: 'v0.app',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  }
 }
 
 export default function RootLayout({

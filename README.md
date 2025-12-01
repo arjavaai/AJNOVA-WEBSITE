@@ -5,10 +5,20 @@ A comprehensive digital platform designed to streamline the German university ad
 ## What This Does
 
 AJ NOVA empowers students to navigate the complex German university admission process through:
-- **AI-Powered Document Generation** - Automated SOP, LOR, Resume, and Cover Letter creation
+- **✅ AI-Powered Document Generation** - Automated SOP, LOR, Resume, and Cover Letter creation using Google Gemini API
 - **Application Tracking** - Real-time progress monitoring from consultation to acceptance
 - **Expert Guidance** - Integrated counselor support and consultation scheduling
 - **APS Verification** - Simplified Akademische Prüfstelle form submission and tracking
+
+### 🎉 New: AI Document Generation System
+A complete document generation and review workflow featuring:
+- Generate professional admission documents (SOP, LOR, Resume, Cover Letter) with AI
+- Rich text editor for customization
+- Submit documents for counsellor review
+- Download in PDF or DOCX format
+- Track document status and versions
+
+**[Quick Start Guide →](./aj-nova-website/QUICK_START.md)** | **[Full Documentation →](./aj-nova-website/AI_DOCUMENTS_README.md)** | **[Testing Guide →](./aj-nova-website/TEST_GUIDE.md)**
 
 ## Quick Start
 
@@ -47,21 +57,37 @@ That's it! The landing page should now be running locally.
 
 ```
 AJNOVA/
-├── aj-nova-website/          # Next.js marketing website
+├── aj-nova-website/          # Next.js marketing website & student dashboard
 │   ├── app/                  # Next.js 16 app directory
+│   │   ├── api/             # API routes
+│   │   │   └── documents/  # Document generation & management APIs
+│   │   ├── dashboard/       # Student dashboard
+│   │   │   ├── documents/  # AI document generation UI
+│   │   │   └── page.tsx    # Dashboard home
+│   │   ├── counsellor/      # Counsellor interface
+│   │   │   └── documents/  # Document review system
 │   │   ├── layout.tsx       # Root layout with theme provider
 │   │   ├── page.tsx         # Homepage with all sections
 │   │   └── globals.css      # Global styles and Tailwind config
 │   ├── components/          # React components
 │   │   ├── ui/             # Reusable UI components (Radix UI based)
+│   │   ├── document-editor.tsx     # Rich text editor (TipTap)
 │   │   ├── hero-section.tsx        # Landing page hero
 │   │   ├── features-grid.tsx       # Features showcase
 │   │   ├── testimonials-section.tsx # Student testimonials
 │   │   ├── navbar.tsx              # Main navigation
 │   │   └── footer.tsx              # Site footer
+│   ├── lib/                # Utility functions & integrations
+│   │   ├── gemini.ts       # Google Gemini AI integration
+│   │   ├── types.ts        # TypeScript type definitions
+│   │   ├── mock-data.ts    # Mock data store (replace with DB)
+│   │   ├── export-utils.ts # PDF/DOCX export functions
+│   │   └── utils.ts        # Utility functions
 │   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Utility functions
-│   └── public/             # Static assets (images, logos)
+│   ├── public/             # Static assets (images, logos)
+│   ├── AI_DOCUMENTS_README.md    # AI feature documentation
+│   ├── TEST_GUIDE.md             # Testing instructions
+│   └── QUICK_START.md            # Quick setup guide
 │
 ├── PRD/                    # Product Requirements Documents
 │   ├── overview.md         # High-level project vision
@@ -244,11 +270,16 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 
 ## Project Status
 
-- ✅ Marketing Website (Phase 1) - **In Progress**
-- ⏳ Student Dashboard (Phase 2) - Planned
+- ✅ Marketing Website (Phase 1) - **Complete**
+- ✅ **AI Document Generation (Phase 2)** - **Complete** 🎉
+  - Full AI-powered document generation system
+  - Student dashboard with document management
+  - Counsellor review interface
+  - PDF/DOCX export functionality
+  - [See Implementation Details →](./aj-nova-website/AI_DOCUMENTS_README.md)
+- ⏳ Application Tracking Dashboard - Planned
 - ⏳ Admin Dashboard (Phase 3) - Planned
-- ⏳ AI Integration (Phase 4) - Planned
-- ⏳ Automation (Phase 5) - Planned
+- ⏳ Automation & Workflows (Phase 4) - Planned
 
 ## Tech Specs
 
