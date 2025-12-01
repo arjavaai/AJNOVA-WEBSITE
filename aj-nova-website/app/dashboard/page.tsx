@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FileText, CheckCircle, Clock } from 'lucide-react'
+import { FileText, CheckCircle, Clock, Building2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function DashboardPage() {
@@ -13,10 +13,23 @@ export default function DashboardPage() {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Documents</CardTitle>
+            <CardTitle className="text-sm font-medium">Applications</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">4</div>
+            <p className="text-xs text-muted-foreground">
+              University applications
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Documents</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -35,20 +48,20 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">2</div>
             <p className="text-xs text-muted-foreground">
-              Documents being worked on
+              Applications & documents
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Accepted</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
+            <div className="text-2xl font-bold text-green-600">1</div>
             <p className="text-xs text-muted-foreground">
-              Ready for submission
+              Congratulations!
             </p>
           </CardContent>
         </Card>
@@ -57,12 +70,18 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Get started with your application documents</CardDescription>
+          <CardDescription>Get started with your applications</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link href="/dashboard/documents">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link href="/dashboard/applications">
               <Button className="w-full" size="lg">
+                <Building2 className="w-4 h-4 mr-2" />
+                View Applications
+              </Button>
+            </Link>
+            <Link href="/dashboard/documents">
+              <Button variant="outline" className="w-full" size="lg">
                 <FileText className="w-4 h-4 mr-2" />
                 Manage Documents
               </Button>

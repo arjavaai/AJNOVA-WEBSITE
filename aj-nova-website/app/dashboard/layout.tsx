@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { FileText, Home, User, MessageSquare } from 'lucide-react'
+import { FileText, Home, User, Building2 } from 'lucide-react'
 
 export default function DashboardLayout({
   children,
@@ -21,6 +21,12 @@ export default function DashboardLayout({
                   <Button variant="ghost" size="sm">
                     <Home className="w-4 h-4 mr-2" />
                     Dashboard
+                  </Button>
+                </Link>
+                <Link href="/dashboard/applications">
+                  <Button variant="ghost" size="sm">
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Applications
                   </Button>
                 </Link>
                 <Link href="/dashboard/documents">
