@@ -40,15 +40,15 @@ export function TestimonialsSection() {
 
       <Marquee direction="right" speed={50}>
         {testimonials.map((item, i) => (
-          <div key={i} className="w-[350px] bg-card border border-border p-6 rounded-2xl mx-4 shadow-sm">
+          <div key={i} className="w-[350px] bg-card border border-border p-6 rounded-2xl mx-4 shadow-sm overflow-hidden">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-border to-muted" />
-              <div>
-                <h4 className="font-bold text-foreground">{item.name}</h4>
-                <p className="text-xs text-muted-foreground">{item.course}</p>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-border to-muted flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <h4 className="font-bold text-foreground truncate">{item.name}</h4>
+                <p className="text-xs text-muted-foreground truncate">{item.course}</p>
               </div>
             </div>
-            <p className="text-muted-foreground text-sm italic">"{item.quote}"</p>
+            <p className="text-muted-foreground text-sm italic break-words">"{item.quote}"</p>
           </div>
         ))}
       </Marquee>
