@@ -11,8 +11,10 @@ import { Progress } from '@/components/ui/progress'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, CheckCircle2, ExternalLink, Loader2, Save } from 'lucide-react'
-import { APSForm } from '@/lib/aps-types'
+import { APSForm, UploadedFile } from '@/lib/aps-types'
 import { useRouter } from 'next/navigation'
+import { FileUpload } from '@/components/file-upload'
+import { DocumentStatusTable } from '@/components/aps-document-status'
 
 function getStatusBadge(status: string) {
   const config: Record<string, { variant: any; label: string }> = {
@@ -497,6 +499,37 @@ export default function APSFormPage() {
                 />
               </div>
             </div>
+            
+            {/* Document Uploads */}
+            <div className="space-y-6 mt-6">
+              <FileUpload
+                label="Degree Certificate"
+                description="Upload your degree certificate (PDF, JPG, or PNG)"
+                accept=".pdf,.jpg,.jpeg,.png"
+                maxSize={10}
+                multiple={false}
+                files={form.higherEducation.degreeCertificate ? [form.higherEducation.degreeCertificate] : []}
+                onChange={(files) => updateForm({
+                  higherEducation: { ...form.higherEducation, degreeCertificate: files[0] }
+                })}
+                disabled={isSubmitted}
+                required
+              />
+              
+              <FileUpload
+                label="Academic Transcripts"
+                description="Upload your academic transcripts (multiple files allowed)"
+                accept=".pdf,.jpg,.jpeg,.png"
+                maxSize={10}
+                multiple={true}
+                files={form.higherEducation.transcripts}
+                onChange={(files) => updateForm({
+                  higherEducation: { ...form.higherEducation, transcripts: files }
+                })}
+                disabled={isSubmitted}
+                required
+              />
+            </div>
           </AccordionContent>
         </AccordionItem>
         
@@ -621,10 +654,46 @@ export default function APSFormPage() {
           </AccordionContent>
         </AccordionItem>
         
-        {/* Section 6: Declaration */}
+        {/* Section 6: Optional Information */}
+        <AccordionItem value="optional">
+          <AccordionTrigger className="text-lg font-semibold">
+            6. Optional Information / Returning Applicants
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-6 pt-4">
+              <div className="space-y-2">
+                <Label>APS Application Number (Optional)</Label>
+                <Input
+                  placeholder="If you already have an APS application number"
+                  value={form.optionalInfo.apsApplicationNumber || ''}
+                  onChange={(e) => updateForm({ 
+                    optionalInfo: { ...form.optionalInfo, apsApplicationNumber: e.target.value }
+                  })}
+                  disabled={isSubmitted}
+                />
+              </div>
+              
+              <FileUpload
+                label="Upload Existing APS Certificate"
+                description="If you have an existing APS certificate, upload it here (optional)"
+                accept=".pdf,.jpg,.jpeg,.png"
+                maxSize={10}
+                multiple={false}
+                files={form.optionalInfo.existingAPSCertificate ? [form.optionalInfo.existingAPSCertificate] : []}
+                onChange={(files) => updateForm({
+                  optionalInfo: { ...form.optionalInfo, existingAPSCertificate: files[0] }
+                })}
+                disabled={isSubmitted}
+                required={false}
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        
+        {/* Section 7: Declaration */}
         <AccordionItem value="declaration">
           <AccordionTrigger className="text-lg font-semibold">
-            6. Declaration
+            7. Declaration
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-4">
@@ -644,6 +713,32 @@ export default function APSFormPage() {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+      
+      {/* Document Status Table (shown after submission) */}
+      {isSubmitted && (
+        <div className="mt-8">
+          <DocumentStatusTable
+            documents={[
+              {
+                name: 'Degree Certificate',
+                file: form.higherEducation.degreeCertificate,
+                required: true
+              },
+              {
+                name: 'Academic Transcripts',
+                file: form.higherEducation.transcripts[0],
+                required: true
+              },
+              ...(form.optionalInfo.existingAPSCertificate ? [{
+                name: 'Existing APS Certificate',
+                file: form.optionalInfo.existingAPSCertificate,
+                required: false
+              }] : [])
+            ]}
+            onView={(file) => window.open(file.url, '_blank')}
+          />
+        </div>
+      )}
       
       {/* Action Buttons */}
       {!isSubmitted && (
