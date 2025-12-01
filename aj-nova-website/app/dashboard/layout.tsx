@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { FileText, Home, User, Building2 } from 'lucide-react'
+import { FileText, Home, User, Building2, ClipboardCheck } from 'lucide-react'
 
 export default function DashboardLayout({
   children,
@@ -33,6 +33,12 @@ export default function DashboardLayout({
                   <Button variant="ghost" size="sm">
                     <FileText className="w-4 h-4 mr-2" />
                     Documents
+                  </Button>
+                </Link>
+                <Link href="/dashboard/aps-form">
+                  <Button variant="ghost" size="sm">
+                    <ClipboardCheck className="w-4 h-4 mr-2" />
+                    APS Form
                   </Button>
                 </Link>
               </nav>
