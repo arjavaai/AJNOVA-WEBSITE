@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,23 +19,109 @@ import {
   Upload,
   Plus,
   Trash2,
+  Loader2,
   Calendar as CalendarIcon
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { mockProfile, getProfileSections, calculateProfileCompletion } from '@/lib/profile-mock-data'
+import { getProfileSections, calculateProfileCompletion } from '@/lib/profile-mock-data'
 import { StudentProfile, COUNTRIES, FIELDS_OF_STUDY } from '@/lib/profile-types'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<Partial<StudentProfile>>(mockProfile)
+  const router = useRouter()
+  const [profile, setProfile] = useState<Partial<StudentProfile>>({})
   const [activeSection, setActiveSection] = useState<string>('personal')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const sections = getProfileSections(profile)
   const completion = calculateProfileCompletion(profile)
 
-  function handleSave() {
-    // Save profile to backend
-    console.log('Saving profile:', profile)
-    alert('Profile saved successfully!')
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+  async function fetchProfile() {
+    try {
+      const response = await fetch('/api/profile')
+      const data = await response.json()
+
+      if (data.profile) {
+        // Convert database format to component format
+        const profileData: Partial<StudentProfile> = {
+          personalInfo: {
+            firstName: data.profile.first_name || '',
+            middleName: data.profile.middle_name || '',
+            lastName: data.profile.last_name || '',
+            gender: data.profile.gender || undefined,
+            dateOfBirth: data.profile.date_of_birth ? new Date(data.profile.date_of_birth) : undefined,
+            nationality: data.profile.nationality || '',
+            countryOfResidence: data.profile.country_of_residence || '',
+            passportNumber: data.profile.passport_number || '',
+            passportExpiry: data.profile.passport_expiry ? new Date(data.profile.passport_expiry) : undefined,
+          },
+          education: data.profile.education || [],
+          workExperience: data.profile.work_experience || [],
+          contactPreferences: {
+            email: data.profile.email || '',
+            mobileNumber: data.profile.phone || '',
+            preferredIntake: data.profile.preferred_intake || undefined,
+            studyLevel: data.profile.study_level || undefined,
+            preferredProgram: data.profile.preferred_program || '',
+          }
+        }
+        setProfile(profileData)
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    try {
+      // Convert component format to database format
+      const updates = {
+        first_name: profile.personalInfo?.firstName,
+        middle_name: profile.personalInfo?.middleName,
+        last_name: profile.personalInfo?.lastName,
+        gender: profile.personalInfo?.gender,
+        date_of_birth: profile.personalInfo?.dateOfBirth?.toISOString(),
+        nationality: profile.personalInfo?.nationality,
+        country_of_residence: profile.personalInfo?.countryOfResidence,
+        passport_number: profile.personalInfo?.passportNumber,
+        passport_expiry: profile.personalInfo?.passportExpiry?.toISOString(),
+        email: profile.contactPreferences?.email,
+        phone: profile.contactPreferences?.mobileNumber,
+        preferred_intake: profile.contactPreferences?.preferredIntake,
+        study_level: profile.contactPreferences?.studyLevel,
+        preferred_program: profile.contactPreferences?.preferredProgram,
+        education: profile.education,
+        work_experience: profile.workExperience,
+      }
+
+      const response = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        alert('Profile saved successfully!')
+        await fetchProfile() // Refresh to get updated data
+      } else {
+        alert('Failed to save profile: ' + (data.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      alert('Failed to save profile')
+    } finally {
+      setSaving(false)
+    }
   }
 
   function addEducation() {
@@ -87,6 +173,14 @@ export default function ProfilePage() {
     })
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl">
       {/* Header */}
@@ -94,13 +188,22 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-3xl font-bold">My Profile</h1>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" disabled>
               <Download className="w-4 h-4 mr-2" />
               Download PDF
             </Button>
-            <Button onClick={handleSave} size="sm">
-              <Save className="w-4 h-4 mr-2" />
-              Save Profile
+            <Button onClick={handleSave} size="sm" disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Profile
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -580,9 +683,18 @@ export default function ProfilePage() {
 
       {/* Action Buttons */}
       <div className="mt-8 flex gap-4">
-        <Button onClick={handleSave} size="lg" className="flex-1">
-          <Save className="w-4 h-4 mr-2" />
-          Save Profile
+        <Button onClick={handleSave} size="lg" className="flex-1" disabled={saving}>
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4 mr-2" />
+              Save Profile
+            </>
+          )}
         </Button>
         {completion >= 80 && (
           <Button size="lg" className="flex-1" asChild>

@@ -32,37 +32,61 @@ export async function GET(request: NextRequest) {
   
   const supabase = await createClient()
 
+  // Check if user is admin/counsellor
+  const { data: userData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const isAdmin = userData?.role === 'admin' || userData?.role === 'counsellor'
+
   try {
     switch (type) {
       case 'upcoming': {
-        const { data: consultations, error } = await supabase
+        let query = supabase
           .from('consultations')
           .select('*')
-          .eq('student_id', user.id)
           .gte('scheduled_at', new Date().toISOString())
           .order('scheduled_at', { ascending: true })
+
+        if (!isAdmin) {
+          query = query.eq('student_id', user.id)
+        }
+
+        const { data: consultations, error } = await query
 
         if (error) throw error
         return NextResponse.json({ consultations: consultations || [] })
       }
 
       case 'history': {
-        const { data: consultations, error } = await supabase
+        let query = supabase
           .from('consultations')
           .select('*')
-          .eq('student_id', user.id)
           .lt('scheduled_at', new Date().toISOString())
           .order('scheduled_at', { ascending: false })
+
+        if (!isAdmin) {
+          query = query.eq('student_id', user.id)
+        }
+
+        const { data: consultations, error } = await query
 
         if (error) throw error
         return NextResponse.json({ consultations: consultations || [] })
       }
 
       case 'stats': {
-        const { data: consultations, error } = await supabase
+        let query = supabase
           .from('consultations')
           .select('*')
-          .eq('student_id', user.id)
+
+        if (!isAdmin) {
+          query = query.eq('student_id', user.id)
+        }
+
+        const { data: consultations, error } = await query
 
         if (error) throw error
 
@@ -75,10 +99,15 @@ export async function GET(request: NextRequest) {
       }
 
       default: {
-        const { data: consultations, error } = await supabase
+        let query = supabase
           .from('consultations')
           .select('*')
-          .eq('student_id', user.id)
+
+        if (!isAdmin) {
+          query = query.eq('student_id', user.id)
+        }
+
+        const { data: consultations, error } = await query
           .order('scheduled_at', { ascending: false })
 
         if (error) throw error

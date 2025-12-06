@@ -3,7 +3,9 @@
     "allow": [
       "Bash(taskkill:*)",
       "Bash(npm install:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__execute_sql"
     ],
     "deny": [],
     "ask": []

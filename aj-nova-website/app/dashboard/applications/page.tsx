@@ -44,19 +44,20 @@ export default function ApplicationsPage() {
   
   async function fetchApplications() {
     try {
-      const response = await fetch('/api/applications?studentId=1')
+      const response = await fetch('/api/applications')
       const data = await response.json()
-      setApplications(data.applications)
+      setApplications(data.applications || [])
     } catch (error) {
       console.error('Error fetching applications:', error)
+      setApplications([])
     } finally {
       setLoading(false)
     }
   }
-  
+
   async function fetchStats() {
     try {
-      const response = await fetch('/api/applications?studentId=1&stats=true')
+      const response = await fetch('/api/applications?stats=true')
       const data = await response.json()
       setStats(data.stats)
     } catch (error) {

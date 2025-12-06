@@ -57,11 +57,12 @@ export default function DocumentsPage() {
   
   async function fetchDocuments() {
     try {
-      const response = await fetch('/api/documents?studentId=1')
+      const response = await fetch('/api/documents')
       const data = await response.json()
-      setDocuments(data.documents)
+      setDocuments(data.documents || [])
     } catch (error) {
       console.error('Error fetching documents:', error)
+      setDocuments([])
     } finally {
       setLoading(false)
     }

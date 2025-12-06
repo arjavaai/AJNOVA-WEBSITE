@@ -11,19 +11,66 @@ import { Consultation } from '@/lib/consultation-types'
 import { ProgressTracker } from '@/components/progress-tracker'
 import { RecentActivity, NotificationsPanel } from '@/components/recent-activity'
 import { QuickStats, ProfileSummaryCard, EligibilityCard, UpcomingEvents } from '@/components/dashboard-widgets'
-import { mockDashboardData } from '@/lib/dashboard-mock-data'
 
 export default function DashboardPage() {
   const [apsForm, setApsForm] = useState<APSForm | null>(null)
   const [loadingAPS, setLoadingAPS] = useState(true)
   const [upcomingConsultations, setUpcomingConsultations] = useState<Consultation[]>([])
   const [loadingConsultations, setLoadingConsultations] = useState(true)
-  
+  const [profile, setProfile] = useState<any>(null)
+  const [stats, setStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-    fetchAPSStatus()
-    fetchUpcomingConsultations()
+    fetchAllData()
   }, [])
-  
+
+  async function fetchAllData() {
+    try {
+      await Promise.all([
+        fetchAPSStatus(),
+        fetchUpcomingConsultations(),
+        fetchProfile(),
+        fetchStats()
+      ])
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function fetchProfile() {
+    try {
+      const response = await fetch('/api/profile')
+      const data = await response.json()
+      setProfile(data.profile)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
+
+  async function fetchStats() {
+    try {
+      const [appsRes, docsRes] = await Promise.all([
+        fetch('/api/applications?stats=true'),
+        fetch('/api/documents')
+      ])
+      const appsData = await appsRes.json()
+      const docsData = await docsRes.json()
+
+      setStats({
+        applicationsSubmitted: appsData.stats?.total || 0,
+        documentsUploaded: docsData.documents?.length || 0,
+        documentsApproved: docsData.documents?.filter((d: any) => d.status === 'APPROVED').length || 0,
+        apsStatus: apsForm?.status || 'Not Started',
+        profileCompletion: profile?.completion_percentage || 0
+      })
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+    }
+  }
+
   async function fetchAPSStatus() {
     try {
       const response = await fetch('/api/aps')
@@ -40,7 +87,7 @@ export default function DashboardPage() {
     try {
       const response = await fetch('/api/consultations?type=upcoming')
       const data = await response.json()
-      setUpcomingConsultations(data.consultations.map((c: any) => ({
+      setUpcomingConsultations((data.consultations || []).map((c: any) => ({
         ...c,
         date: new Date(c.date)
       })))
@@ -64,45 +111,84 @@ export default function DashboardPage() {
     
     return <Badge variant={config[status]?.variant}>{config[status]?.label}</Badge>
   }
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
+  }
+
+  const studentName = profile?.first_name || profile?.last_name
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
+    : 'Student'
+
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Welcome back, {mockDashboardData.studentName}!</h1>
+        <h1 className="text-3xl font-bold mb-2">Welcome back, {studentName}!</h1>
         <p className="text-muted-foreground">
           Your application progress is automatically saved. Continue from where you left off.
         </p>
       </div>
 
-      {/* Progress Tracker */}
-      <ProgressTracker stages={mockDashboardData.progress} className="mb-8" />
-
       {/* Quick Stats */}
-      <QuickStats stats={mockDashboardData.stats} className="mb-8" />
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Applications</CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.applicationsSubmitted}</div>
+              <p className="text-xs text-muted-foreground">
+                University applications
+              </p>
+            </CardContent>
+          </Card>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Left Column - 2/3 width */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Profile & Eligibility */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ProfileSummaryCard profile={mockDashboardData.profileSummary} />
-            <EligibilityCard result={mockDashboardData.eligibilityResult} />
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Documents</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.documentsUploaded}</div>
+              <p className="text-xs text-muted-foreground">
+                Uploaded documents
+              </p>
+            </CardContent>
+          </Card>
 
-          {/* Recent Activity */}
-          <RecentActivity activities={mockDashboardData.recentActivities} />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Approved</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{stats.documentsApproved}</div>
+              <p className="text-xs text-muted-foreground">
+                Documents approved
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Profile</CardTitle>
+              <FileCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.profileCompletion}%</div>
+              <p className="text-xs text-muted-foreground">
+                Profile completion
+              </p>
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Right Column - 1/3 width */}
-        <div className="space-y-6">
-          {/* Notifications */}
-          <NotificationsPanel notifications={mockDashboardData.notifications} />
-          
-          {/* Upcoming Events */}
-          <UpcomingEvents events={mockDashboardData.upcomingEvents} />
-        </div>
-      </div>
+      )}
 
       {/* Old Stats Cards - Kept for backward compatibility */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 hidden">
@@ -298,7 +384,7 @@ export default function DashboardPage() {
                 <FileCheck className="w-6 h-6" />
                 <div className="text-center">
                   <div className="font-semibold">Continue APS Form</div>
-                  <div className="text-xs opacity-90">{mockDashboardData.stats.apsStatus}</div>
+                  <div className="text-xs opacity-90">{stats?.apsStatus || 'Not Started'}</div>
                 </div>
               </Button>
             </Link>
@@ -325,7 +411,7 @@ export default function DashboardPage() {
                 <Building2 className="w-6 h-6" />
                 <div className="text-center">
                   <div className="font-semibold">View Applications</div>
-                  <div className="text-xs opacity-70">{mockDashboardData.stats.applicationsSubmitted} submitted</div>
+                  <div className="text-xs opacity-70">{stats?.applicationsSubmitted || 0} submitted</div>
                 </div>
               </Button>
             </Link>

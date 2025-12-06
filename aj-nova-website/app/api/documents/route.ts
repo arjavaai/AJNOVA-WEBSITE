@@ -16,17 +16,41 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
+    const status = searchParams.get('status')
+
+    // Check if user is admin/counsellor
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const isAdmin = userData?.role === 'admin' || userData?.role === 'counsellor'
 
     // Build query
     let query = supabase
       .from('documents')
       .select('*')
-      .eq('student_id', user.id)
-      .order('created_at', { ascending: false })
+
+    // If not admin, filter by student_id
+    if (!isAdmin) {
+      query = query.eq('student_id', user.id)
+    }
+
+    query = query.order('created_at', { ascending: false })
 
     // Filter by type if provided
     if (type) {
       query = query.eq('type', type)
+    }
+
+    // Filter by status if provided (for admin)
+    if (status) {
+      if (status === 'pending') {
+        query = query.in('status', ['SUBMITTED', 'UNDER_REVIEW'])
+      } else {
+        query = query.eq('status', status.toUpperCase())
+      }
     }
 
     const { data: documents, error } = await query

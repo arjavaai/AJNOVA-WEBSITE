@@ -39,8 +39,8 @@ export default function ConsultationsPage() {
   async function fetchData() {
     try {
       const [upcomingRes, historyRes, slotsRes, counsellorsRes] = await Promise.all([
-        fetch('/api/consultations?studentId=1&type=upcoming'),
-        fetch('/api/consultations?studentId=1&type=history'),
+        fetch('/api/consultations?type=upcoming'),
+        fetch('/api/consultations?type=history'),
         fetch('/api/consultations?type=slots'),
         fetch('/api/consultations?type=counsellors')
       ])
@@ -78,7 +78,7 @@ export default function ConsultationsPage() {
 
     setBooking(true)
     try {
-      const response = await fetch('/api/consultations?studentId=1', {
+      const response = await fetch('/api/consultations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

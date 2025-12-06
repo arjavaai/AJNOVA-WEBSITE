@@ -43,9 +43,67 @@ export default function APSFormPage() {
   
   async function fetchForm() {
     try {
-      const response = await fetch('/api/aps?studentId=1')
+      // Fetch from API without studentId - API will use authenticated user
+      const response = await fetch('/api/aps')
       const data = await response.json()
-      setForm(data.form)
+
+      // Initialize form with default structure if data is incomplete
+      const initializedForm: APSForm = {
+        id: data.form?.id || '',
+        studentId: data.form?.studentId || data.form?.student_id || '',
+        status: data.form?.status || 'NOT_STARTED',
+        completionPercentage: data.form?.completionPercentage || data.form?.completion_percentage || 0,
+        personalDetails: {
+          fullName: data.form?.personalDetails?.fullName || '',
+          dateOfBirth: data.form?.personalDetails?.dateOfBirth || null,
+          gender: data.form?.personalDetails?.gender || 'MALE',
+          nationality: data.form?.personalDetails?.nationality || '',
+          passportNumber: data.form?.personalDetails?.passportNumber || '',
+          passportExpiryDate: data.form?.personalDetails?.passportExpiryDate || null,
+          email: data.form?.personalDetails?.email || '',
+          mobileNumber: data.form?.personalDetails?.mobileNumber || '',
+        },
+        secondaryEducation: {
+          grade10SchoolName: data.form?.secondaryEducation?.grade10SchoolName || '',
+          grade10Year: data.form?.secondaryEducation?.grade10Year || 0,
+          grade10Marks: data.form?.secondaryEducation?.grade10Marks || 0,
+          grade10Board: data.form?.secondaryEducation?.grade10Board || '',
+          grade12SchoolName: data.form?.secondaryEducation?.grade12SchoolName || '',
+          grade12Year: data.form?.secondaryEducation?.grade12Year || 0,
+          grade12Marks: data.form?.secondaryEducation?.grade12Marks || 0,
+          grade12Board: data.form?.secondaryEducation?.grade12Board || '',
+        },
+        higherEducation: {
+          degreeAwarded: data.form?.higherEducation?.degreeAwarded || '',
+          universityName: data.form?.higherEducation?.universityName || '',
+          countryOfEducation: data.form?.higherEducation?.countryOfEducation || '',
+          finalGrade: data.form?.higherEducation?.finalGrade || 0,
+          mediumOfInstruction: data.form?.higherEducation?.mediumOfInstruction || 'ENGLISH',
+          backlogs: data.form?.higherEducation?.backlogs || 0,
+          degreeCertificate: data.form?.higherEducation?.degreeCertificate || null,
+          transcripts: data.form?.higherEducation?.transcripts || [],
+        },
+        languageTestScores: {
+          englishTest: data.form?.languageTestScores?.englishTest || null,
+          englishScore: data.form?.languageTestScores?.englishScore || null,
+          germanLevel: data.form?.languageTestScores?.germanLevel || 'NONE',
+        },
+        universityPreferences: {
+          preferredUniversity1: data.form?.universityPreferences?.preferredUniversity1 || '',
+          preferredUniversity2: data.form?.universityPreferences?.preferredUniversity2 || '',
+          preferredIntake: data.form?.universityPreferences?.preferredIntake || 'WINTER_2025',
+        },
+        optionalInfo: {
+          apsApplicationNumber: data.form?.optionalInfo?.apsApplicationNumber || '',
+          existingAPSCertificate: data.form?.optionalInfo?.existingAPSCertificate || null,
+        },
+        declarationAccepted: data.form?.declarationAccepted || false,
+        submittedAt: data.form?.submittedAt || data.form?.submitted_at || null,
+        createdAt: data.form?.createdAt || data.form?.created_at || new Date().toISOString(),
+        updatedAt: data.form?.updatedAt || data.form?.updated_at || new Date().toISOString(),
+      }
+
+      setForm(initializedForm)
     } catch (error) {
       console.error('Error fetching APS form:', error)
     } finally {
@@ -55,10 +113,10 @@ export default function APSFormPage() {
   
   async function handleSave() {
     if (!form) return
-    
+
     setSaving(true)
     try {
-      const response = await fetch('/api/aps?studentId=1', {
+      const response = await fetch('/api/aps', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, status: 'DRAFT' })
@@ -80,10 +138,10 @@ export default function APSFormPage() {
       alert('Please complete all required fields and accept the declaration')
       return
     }
-    
+
     setSubmitting(true)
     try {
-      const response = await fetch('/api/aps?studentId=1', {
+      const response = await fetch('/api/aps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)

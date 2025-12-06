@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,20 +15,136 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  BarChart3
+  BarChart3,
+  Loader2
 } from 'lucide-react'
 import {
-  mockAdminMetrics,
-  mockRecentActivities,
   formatActivityTime,
   getStatusColor
 } from '@/lib/admin-mock-data'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
+interface AdminMetrics {
+  totalStudents: number
+  activeStudents: number
+  pendingReviews: number
+  upcomingConsultations: number
+  documentApprovalRate: number
+  recentApplications: number
+  studentSatisfaction: number
+}
+
+interface Activity {
+  id: string
+  type: string
+  studentName: string
+  description: string
+  timestamp: Date
+}
+
 export default function AdminDashboardPage() {
-  const metrics = mockAdminMetrics
-  const activities = mockRecentActivities
+  const [metrics, setMetrics] = useState<AdminMetrics | null>(null)
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAdminData()
+  }, [])
+
+  async function fetchAdminData() {
+    try {
+      // Fetch all data in parallel
+      const [usersRes, docsRes, consultationsRes, appsRes] = await Promise.all([
+        fetch('/api/admin/users'),
+        fetch('/api/documents'), // Fetch all documents for proper metrics calculation
+        fetch('/api/consultations?type=upcoming'),
+        fetch('/api/applications')
+      ])
+
+      const usersData = await usersRes.json()
+      const docsData = await docsRes.json()
+      const consultationsData = await consultationsRes.json()
+      const appsData = await appsRes.json()
+
+      // Calculate metrics from real data
+      const totalStudents = usersData.users?.length || 0
+      const activeStudents = usersData.users?.filter((u: any) => u.last_sign_in_at)?.length || 0
+      const pendingReviews = docsData.documents?.filter((d: any) =>
+        d.status === 'SUBMITTED' || d.status === 'UNDER_REVIEW'
+      )?.length || 0
+      const upcomingConsultations = consultationsData.consultations?.length || 0
+      const totalDocs = docsData.documents?.length || 1
+      const approvedDocs = docsData.documents?.filter((d: any) => d.status === 'APPROVED')?.length || 0
+      const documentApprovalRate = Math.round((approvedDocs / totalDocs) * 100)
+      const recentApplications = appsData.applications?.filter((a: any) => {
+        const createdAt = new Date(a.created_at)
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        return createdAt >= weekAgo
+      })?.length || 0
+
+      setMetrics({
+        totalStudents,
+        activeStudents,
+        pendingReviews,
+        upcomingConsultations,
+        documentApprovalRate,
+        recentApplications,
+        studentSatisfaction: 4.5 // This would come from a feedback system
+      })
+
+      // Create recent activities from real data
+      const recentActivities: Activity[] = []
+
+      // Add recent document submissions
+      docsData.documents?.slice(0, 3).forEach((doc: any) => {
+        recentActivities.push({
+          id: doc.id,
+          type: 'DOCUMENT_SUBMITTED',
+          studentName: doc.student_name || 'Student',
+          description: `Submitted ${doc.type} for review`,
+          timestamp: new Date(doc.created_at)
+        })
+      })
+
+      // Add recent applications
+      appsData.applications?.slice(0, 2).forEach((app: any) => {
+        recentActivities.push({
+          id: app.id,
+          type: 'APPLICATION_UPDATED',
+          studentName: app.student_name || 'Student',
+          description: `Applied to ${app.university?.name || 'University'}`,
+          timestamp: new Date(app.created_at)
+        })
+      })
+
+      // Sort by timestamp
+      recentActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      setActivities(recentActivities.slice(0, 5))
+
+    } catch (error) {
+      console.error('Error fetching admin data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!metrics) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Failed to load admin data</p>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">

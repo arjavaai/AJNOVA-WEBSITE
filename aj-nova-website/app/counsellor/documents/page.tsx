@@ -19,14 +19,15 @@ export default function CounsellorDocumentsPage() {
   
   async function fetchPendingDocuments() {
     try {
-      const response = await fetch('/api/documents?studentId=1')
+      const response = await fetch('/api/documents?status=pending')
       const data = await response.json()
-      const submitted = data.documents.filter(
+      const submitted = (data.documents || []).filter(
         (d: Document) => d.status === 'SUBMITTED' || d.status === 'UNDER_REVIEW'
       )
       setDocuments(submitted)
     } catch (error) {
       console.error('Error fetching documents:', error)
+      setDocuments([])
     } finally {
       setLoading(false)
     }

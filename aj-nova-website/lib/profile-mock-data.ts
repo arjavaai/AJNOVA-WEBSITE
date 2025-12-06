@@ -166,55 +166,133 @@ export function calculateProfileCompletion(profile: Partial<StudentProfile>): nu
 }
 
 export function getProfileSections(profile: Partial<StudentProfile>): ProfileSection[] {
+  // Personal Info
+  const personalRequired = ['firstName', 'lastName', 'dateOfBirth', 'gender', 'nationality', 'countryOfResidence', 'passportNumber', 'passportExpiry']
+  let personalFilled = 0
+  if (profile.personalInfo) {
+    personalRequired.forEach(field => {
+      const value = profile.personalInfo?.[field as keyof typeof profile.personalInfo]
+      if (value !== null && value !== undefined && value !== '') personalFilled++
+    })
+  }
+  const personalPercent = Math.round((personalFilled / personalRequired.length) * 100)
+
+  // Academic Background (primary education)
+  let educationFilled = 0
+  const educationTotal = 7
+  const primaryEdu = profile.education?.find(e => e.isPrimary) || profile.education?.[0]
+  if (primaryEdu) {
+    if (primaryEdu.level) educationFilled++
+    if (primaryEdu.fieldOfStudy) educationFilled++
+    if (primaryEdu.institution) educationFilled++
+    if (primaryEdu.country) educationFilled++
+    if (primaryEdu.graduationYear) educationFilled++
+    if (primaryEdu.score !== null && primaryEdu.score !== undefined) educationFilled++
+    if (primaryEdu.mediumOfInstruction) educationFilled++
+  }
+  const educationPercent = Math.round((educationFilled / educationTotal) * 100)
+
+  // Secondary Education
+  let secondaryFilled = 0
+  const secondaryTotal = 6
+  if (profile.secondaryEducation) {
+    const sec = profile.secondaryEducation
+    if (sec.grade10SchoolName) secondaryFilled++
+    if (sec.grade10Year) secondaryFilled++
+    if (sec.grade10Marks) secondaryFilled++
+    if (sec.grade12SchoolName) secondaryFilled++
+    if (sec.grade12Year) secondaryFilled++
+    if (sec.grade12Marks) secondaryFilled++
+  }
+  const secondaryPercent = Math.round((secondaryFilled / secondaryTotal) * 100)
+
+  // Language Tests
+  let languageFilled = 0
+  const languageTotal = 2
+  if (profile.languageTests) {
+    if (profile.languageTests.englishTest) languageFilled++
+    if (profile.languageTests.germanLevel && profile.languageTests.germanLevel !== 'NONE') languageFilled++
+  }
+  const languagePercent = Math.round((languageFilled / languageTotal) * 100)
+
+  // Work Experience (optional)
+  const workFilled = (profile.workExperience && profile.workExperience.length > 0) ? 1 : 0
+  const workTotal = 1
+  const workPercent = Math.round((workFilled / workTotal) * 100)
+
+  // Contact & Preferences
+  let contactFilled = 0
+  const contactTotal = 5
+  if (profile.contactPreferences) {
+    const contact = profile.contactPreferences
+    if (contact.email) contactFilled++
+    if (contact.mobileNumber) contactFilled++
+    if (contact.preferredIntake) contactFilled++
+    if (contact.interestedCountry) contactFilled++
+    if (contact.studyLevel) contactFilled++
+  }
+  const contactPercent = Math.round((contactFilled / contactTotal) * 100)
+
+  // Documents
+  let documentsFilled = 0
+  const documentsTotal = 3
+  const hasPassport = profile.documents?.some(d => d.category === 'PASSPORT')
+  const hasTranscript = profile.documents?.some(d => d.category === 'TRANSCRIPT')
+  const hasDegree = profile.documents?.some(d => d.category === 'DEGREE')
+  if (hasPassport) documentsFilled++
+  if (hasTranscript) documentsFilled++
+  if (hasDegree) documentsFilled++
+  const documentsPercent = Math.round((documentsFilled / documentsTotal) * 100)
+
   return [
     {
       id: 'personal',
       title: 'Personal Information',
-      completionPercentage: 85,
-      requiredFieldsFilled: 7,
-      totalRequiredFields: 8
+      completionPercentage: personalPercent,
+      requiredFieldsFilled: personalFilled,
+      totalRequiredFields: personalRequired.length
     },
     {
       id: 'education',
       title: 'Academic Background',
-      completionPercentage: 100,
-      requiredFieldsFilled: 7,
-      totalRequiredFields: 7
+      completionPercentage: educationPercent,
+      requiredFieldsFilled: educationFilled,
+      totalRequiredFields: educationTotal
     },
     {
       id: 'secondary',
       title: 'Secondary Education',
-      completionPercentage: 100,
-      requiredFieldsFilled: 6,
-      totalRequiredFields: 6
+      completionPercentage: secondaryPercent,
+      requiredFieldsFilled: secondaryFilled,
+      totalRequiredFields: secondaryTotal
     },
     {
       id: 'language',
       title: 'Language & Test Scores',
-      completionPercentage: 75,
-      requiredFieldsFilled: 3,
-      totalRequiredFields: 4
+      completionPercentage: languagePercent,
+      requiredFieldsFilled: languageFilled,
+      totalRequiredFields: languageTotal
     },
     {
       id: 'work',
       title: 'Work Experience',
-      completionPercentage: 100,
-      requiredFieldsFilled: 1,
-      totalRequiredFields: 1
+      completionPercentage: workPercent,
+      requiredFieldsFilled: workFilled,
+      totalRequiredFields: workTotal
     },
     {
       id: 'contact',
       title: 'Contact & Preferences',
-      completionPercentage: 80,
-      requiredFieldsFilled: 4,
-      totalRequiredFields: 5
+      completionPercentage: contactPercent,
+      requiredFieldsFilled: contactFilled,
+      totalRequiredFields: contactTotal
     },
     {
       id: 'documents',
       title: 'Document Uploads',
-      completionPercentage: 67,
-      requiredFieldsFilled: 2,
-      totalRequiredFields: 3
+      completionPercentage: documentsPercent,
+      requiredFieldsFilled: documentsFilled,
+      totalRequiredFields: documentsTotal
     }
   ]
 }
