@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(taskkill:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}

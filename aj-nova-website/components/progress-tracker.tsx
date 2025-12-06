@@ -122,10 +122,10 @@ export function ProgressTracker({ stages, className }: ProgressTrackerProps) {
                       {getStatusLabel(stage.status)}
                     </Badge>
                     {stage.completionDate && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(stage.completionDate).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric' 
+                      <p className="text-xs text-muted-foreground mt-1" suppressHydrationWarning>
+                        {new Date(stage.completionDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric'
                         })}
                       </p>
                     )}
@@ -177,8 +177,12 @@ export function ProgressTracker({ stages, className }: ProgressTrackerProps) {
                   </Badge>
                 </div>
                 {stage.completionDate && (
-                  <p className="text-xs text-muted-foreground">
-                    Completed {new Date(stage.completionDate).toLocaleDateString()}
+                  <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+                    Completed {new Date(stage.completionDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
                   </p>
                 )}
               </div>

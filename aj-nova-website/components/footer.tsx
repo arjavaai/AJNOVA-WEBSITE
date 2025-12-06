@@ -1,4 +1,5 @@
 import { Twitter, Linkedin, Instagram } from "lucide-react"
+import Image from "next/image"
 
 export function Footer() {
   return (
@@ -6,10 +7,13 @@ export function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-navy to-coral flex items-center justify-center text-white font-bold text-lg">
-              AJ
-            </div>
-            <span className="text-xl font-display font-bold tracking-tight text-foreground">AJ NOVA</span>
+            <Image
+              src="/websitelogo.png"
+              alt="AJ NOVA Logo"
+              width={140}
+              height={40}
+              className="h-10 w-auto"
+            />
           </div>
           <p className="text-muted-foreground mb-3">
             Making German education accessible to everyone through technology.

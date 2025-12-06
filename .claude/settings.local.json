@@ -2,9 +2,16 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
+  },
+  "mcpServers": {
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=jvssfdlouhwxioahvame"
+    }
   }
 }

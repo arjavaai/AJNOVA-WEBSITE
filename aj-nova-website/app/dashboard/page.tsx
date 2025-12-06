@@ -26,7 +26,7 @@ export default function DashboardPage() {
   
   async function fetchAPSStatus() {
     try {
-      const response = await fetch('/api/aps?studentId=1')
+      const response = await fetch('/api/aps')
       const data = await response.json()
       setApsForm(data.form)
     } catch (error) {
@@ -35,10 +35,10 @@ export default function DashboardPage() {
       setLoadingAPS(false)
     }
   }
-  
+
   async function fetchUpcomingConsultations() {
     try {
-      const response = await fetch('/api/consultations?studentId=1&type=upcoming')
+      const response = await fetch('/api/consultations?type=upcoming')
       const data = await response.json()
       setUpcomingConsultations(data.consultations.map((c: any) => ({
         ...c,
@@ -190,11 +190,11 @@ export default function DashboardPage() {
                     <CalendarIcon className="w-5 h-5 text-primary mt-0.5" />
                     <div>
                       <p className="font-medium">{consultation.counsellorName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(consultation.date).toLocaleDateString('en-US', { 
-                          weekday: 'short', 
-                          month: 'short', 
-                          day: 'numeric' 
+                      <p className="text-sm text-muted-foreground" suppressHydrationWarning>
+                        {new Date(consultation.date).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
                         })} at {consultation.time}
                       </p>
                       {consultation.topic && (

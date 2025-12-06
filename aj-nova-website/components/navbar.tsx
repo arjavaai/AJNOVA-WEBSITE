@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { BeamButton } from "./beam-button"
 
 export function Navbar() {
@@ -12,34 +13,40 @@ export function Navbar() {
           {/* Content */}
           <div className="relative px-6 md:px-8 h-16 flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
               <img 
                 src="/websitelogo.png" 
                 alt="AJ NOVA Logo" 
                 className="h-10 w-auto object-contain"
               />
-            </div>
+            </Link>
 
             {/* Navigation Links */}
             <div className="hidden md:flex gap-8 text-sm font-medium text-muted-foreground">
-              <a href="#" className="hover:text-coral transition-colors duration-200">
+              <Link href="/" className="hover:text-coral transition-colors duration-200">
+                Home
+              </Link>
+              <a href="#about" className="hover:text-coral transition-colors duration-200">
+                About
+              </a>
+              <a href="#services" className="hover:text-coral transition-colors duration-200">
                 Services
               </a>
-              <a href="#" className="hover:text-coral transition-colors duration-200">
-                Universities
-              </a>
-              <a href="#" className="hover:text-coral transition-colors duration-200">
-                Pricing
-              </a>
+              <Link href="/eligibility-checker" className="hover:text-coral transition-colors duration-200">
+                Eligibility Checker
+              </Link>
+              <Link href="/contact" className="hover:text-coral transition-colors duration-200">
+                Contact
+              </Link>
             </div>
 
             {/* CTA Buttons */}
             <div className="flex gap-3 items-center">
-              <a href="#" className="hidden md:block text-sm font-medium text-muted-foreground hover:text-coral transition-colors duration-200">
+              <Link href="/login" className="hidden md:block text-sm font-medium text-muted-foreground hover:text-coral transition-colors duration-200">
                 Login
-              </a>
+              </Link>
               <BeamButton primary className="text-sm px-5 py-2">
-                Get Started
+                Free Consultation
               </BeamButton>
             </div>
           </div>
