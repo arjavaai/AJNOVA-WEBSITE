@@ -10,7 +10,8 @@
       "WebFetch(domain:supabase.com)",
       "Bash(tree:*)",
       "Bash(ls -la \"D:\\brave satya\\AJNOVA-WEBSITE\\aj-nova-website\\app\\dashboard\"\" | grep -E \"page)",
-      "Bash(layout \")"
+      "Bash(layout \")",
+      "Bash(pnpm install:*)"
     ],
     "deny": [],
     "ask": []
