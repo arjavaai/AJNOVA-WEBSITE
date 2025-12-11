@@ -834,7 +834,6 @@ async def upload_document(
 ```
 
 ---
-
 ## 8. Real-time Features
 
 ### 8.1 Supabase Realtime for Notifications

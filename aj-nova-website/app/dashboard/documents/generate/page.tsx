@@ -32,26 +32,17 @@ function GenerateDocumentContent() {
   
   async function handleGenerate() {
     setLoading(true)
-    
+
     try {
-      const response = await fetch('/api/documents/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          documentType,
-          profileData: mockStudentProfile,
-          targetUniversity,
-          targetProgram,
-          additionalNotes,
-        }),
+      const { documents: documentsAPI } = await import('@/lib/api-client')
+
+      const data = await documentsAPI.generate({
+        type: documentType.toLowerCase(),
+        university: targetUniversity,
+        program: targetProgram,
+        additional_info: additionalNotes,
       })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate document')
-      }
-      
+
       router.push(`/dashboard/documents/${data.document.id}`)
     } catch (error: any) {
       console.error('Error generating document:', error)

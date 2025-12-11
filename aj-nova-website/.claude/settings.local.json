@@ -5,7 +5,12 @@
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
       "mcp__supabase__apply_migration",
-      "mcp__supabase__execute_sql"
+      "mcp__supabase__execute_sql",
+      "Bash(test:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m app.main:*)"
     ],
     "deny": [],
     "ask": []

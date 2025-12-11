@@ -43,9 +43,8 @@ export default function APSFormPage() {
   
   async function fetchForm() {
     try {
-      // Fetch from API without studentId - API will use authenticated user
-      const response = await fetch('/api/aps')
-      const data = await response.json()
+      const { aps: apsAPI } = await import('@/lib/api-client')
+      const data = await apsAPI.get()
 
       // Initialize form with default structure if data is incomplete
       const initializedForm: APSForm = {
@@ -116,13 +115,8 @@ export default function APSFormPage() {
 
     setSaving(true)
     try {
-      const response = await fetch('/api/aps', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, status: 'DRAFT' })
-      })
-      
-      const data = await response.json()
+      const { aps: apsAPI } = await import('@/lib/api-client')
+      const data = await apsAPI.update({ ...form, status: 'DRAFT' })
       setForm(data.form)
       alert('Progress saved!')
     } catch (error) {
@@ -141,13 +135,8 @@ export default function APSFormPage() {
 
     setSubmitting(true)
     try {
-      const response = await fetch('/api/aps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      })
-      
-      const data = await response.json()
+      const { aps: apsAPI } = await import('@/lib/api-client')
+      const data = await apsAPI.submit(form)
       setForm(data.form)
       alert('APS form submitted successfully! Our team will review your information.')
     } catch (error) {

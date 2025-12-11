@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   AlertCircle,
   BarChart3,
-  Loader2
+  Loader2,
+  Calculator
 } from 'lucide-react'
 import {
   formatActivityTime,
@@ -33,6 +34,9 @@ interface AdminMetrics {
   documentApprovalRate: number
   recentApplications: number
   studentSatisfaction: number
+  verifiedAPS: number
+  activeApplications: number
+  documentsApproved: number
 }
 
 interface Activity {
@@ -54,18 +58,16 @@ export default function AdminDashboardPage() {
 
   async function fetchAdminData() {
     try {
-      // Fetch all data in parallel
-      const [usersRes, docsRes, consultationsRes, appsRes] = await Promise.all([
-        fetch('/api/admin/users'),
-        fetch('/api/documents'), // Fetch all documents for proper metrics calculation
-        fetch('/api/consultations?type=upcoming'),
-        fetch('/api/applications')
-      ])
+      const { admin: adminAPI, documents: documentsAPI, consultations: consultationsAPI, applications: applicationsAPI } = await import('@/lib/api-client')
 
-      const usersData = await usersRes.json()
-      const docsData = await docsRes.json()
-      const consultationsData = await consultationsRes.json()
-      const appsData = await appsRes.json()
+      // Fetch all data in parallel
+      const [usersData, docsData, consultationsData, appsData, apsData] = await Promise.all([
+        adminAPI.getUsers(),
+        documentsAPI.list(),
+        consultationsAPI.list('upcoming'),
+        applicationsAPI.list(false),
+        adminAPI.getReviewQueue().catch(() => ({ forms: [] })) // Fallback if endpoint doesn't exist yet
+      ])
 
       // Calculate metrics from real data
       const totalStudents = usersData.users?.length || 0
@@ -76,12 +78,35 @@ export default function AdminDashboardPage() {
       const upcomingConsultations = consultationsData.consultations?.length || 0
       const totalDocs = docsData.documents?.length || 1
       const approvedDocs = docsData.documents?.filter((d: any) => d.status === 'APPROVED')?.length || 0
-      const documentApprovalRate = Math.round((approvedDocs / totalDocs) * 100)
+      const documentApprovalRate = totalDocs > 0 ? Math.round((approvedDocs / totalDocs) * 100) : 0
+      
+      // Get recent applications (last 7 days)
       const recentApplications = appsData.applications?.filter((a: any) => {
         const createdAt = new Date(a.created_at)
         const weekAgo = new Date()
         weekAgo.setDate(weekAgo.getDate() - 7)
         return createdAt >= weekAgo
+      })?.length || 0
+
+      // Calculate APS verified count (this month)
+      const currentMonth = new Date().getMonth()
+      const currentYear = new Date().getFullYear()
+      const verifiedAPS = apsData.forms?.filter((aps: any) => {
+        if (aps.status !== 'VERIFIED') return false
+        const verifiedDate = new Date(aps.updated_at || aps.created_at)
+        return verifiedDate.getMonth() === currentMonth && verifiedDate.getFullYear() === currentYear
+      })?.length || 0
+
+      // Count active applications (not rejected or withdrawn)
+      const activeApplications = appsData.applications?.filter((a: any) => 
+        !['rejected', 'withdrawn'].includes(a.status?.toLowerCase())
+      )?.length || 0
+
+      // Count documents approved this month
+      const documentsApproved = docsData.documents?.filter((d: any) => {
+        if (d.status !== 'APPROVED') return false
+        const approvedDate = new Date(d.updated_at || d.created_at)
+        return approvedDate.getMonth() === currentMonth && approvedDate.getFullYear() === currentYear
       })?.length || 0
 
       setMetrics({
@@ -91,7 +116,10 @@ export default function AdminDashboardPage() {
         upcomingConsultations,
         documentApprovalRate,
         recentApplications,
-        studentSatisfaction: 4.5 // This would come from a feedback system
+        studentSatisfaction: 4.5, // This would come from a feedback system
+        verifiedAPS,
+        activeApplications,
+        documentsApproved
       })
 
       // Create recent activities from real data
@@ -229,6 +257,36 @@ export default function AdminDashboardPage() {
             <Progress value={metrics.documentApprovalRate} className="h-1 mt-3" />
           </CardContent>
         </Card>
+
+        {/* ECTS Calculator Access */}
+        <Card className="md:col-span-2 lg:col-span-4 bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="text-sm font-medium text-indigo-900">
+                ECTS Calculator
+              </CardTitle>
+              <p className="text-xs text-indigo-700 mt-1">
+                Quick access to international degree ECTS estimation tool
+              </p>
+            </div>
+            <Calculator className="w-6 h-6 text-indigo-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <p className="text-sm text-indigo-900">
+                  Estimate ECTS credits for international degrees from 100+ countries with specialized conversion formulas for EU, South Asia, USA/Canada, and UK education systems.
+                </p>
+              </div>
+              <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
+                <Link href="/ects-calculator">
+                  <Calculator className="w-4 h-4 mr-2" />
+                  Open Calculator
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -301,15 +359,21 @@ export default function AdminDashboardPage() {
                     <span className="text-sm font-medium">Active Students</span>
                     <span className="text-sm font-bold">{metrics.activeStudents} / {metrics.totalStudents}</span>
                   </div>
-                  <Progress value={(metrics.activeStudents / metrics.totalStudents) * 100} className="h-2" />
+                  <Progress 
+                    value={metrics.totalStudents > 0 ? (metrics.activeStudents / metrics.totalStudents) * 100 : 0} 
+                    className="h-2" 
+                  />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Recent Applications</span>
+                    <span className="text-sm font-medium">Recent Applications (7 days)</span>
                     <span className="text-sm font-bold">{metrics.recentApplications}</span>
                   </div>
-                  <Progress value={70} className="h-2" />
+                  <Progress 
+                    value={metrics.recentApplications > 0 ? Math.min((metrics.recentApplications / 10) * 100, 100) : 0} 
+                    className="h-2" 
+                  />
                 </div>
 
                 <div>
@@ -339,6 +403,12 @@ export default function AdminDashboardPage() {
                 <Link href="/admin/documents">
                   <FileText className="w-4 h-4 mr-2" />
                   Review Documents
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/ects-calculator">
+                  <Calculator className="w-4 h-4 mr-2" />
+                  ECTS Calculator
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start" asChild>
@@ -373,7 +443,7 @@ export default function AdminDashboardPage() {
                   <p className="text-sm font-medium">Verified APS</p>
                   <p className="text-xs text-muted-foreground">This month</p>
                 </div>
-                <div className="text-2xl font-bold text-green-600">27</div>
+                <div className="text-2xl font-bold text-green-600">{metrics.verifiedAPS}</div>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
@@ -381,7 +451,7 @@ export default function AdminDashboardPage() {
                   <p className="text-sm font-medium">Active Applications</p>
                   <p className="text-xs text-muted-foreground">In progress</p>
                 </div>
-                <div className="text-2xl font-bold text-blue-600">58</div>
+                <div className="text-2xl font-bold text-blue-600">{metrics.activeApplications}</div>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
@@ -389,7 +459,7 @@ export default function AdminDashboardPage() {
                   <p className="text-sm font-medium">Documents Approved</p>
                   <p className="text-xs text-muted-foreground">This month</p>
                 </div>
-                <div className="text-2xl font-bold text-purple-600">89</div>
+                <div className="text-2xl font-bold text-purple-600">{metrics.documentsApproved}</div>
               </div>
             </CardContent>
           </Card>

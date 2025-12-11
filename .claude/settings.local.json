@@ -4,7 +4,13 @@
       "WebSearch",
       "Bash(git init:*)",
       "Bash(find:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(python -m uvicorn:*)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(tree:*)",
+      "Bash(ls -la \"D:\\brave satya\\AJNOVA-WEBSITE\\aj-nova-website\\app\\dashboard\"\" | grep -E \"page)",
+      "Bash(layout \")"
     ],
     "deny": [],
     "ask": []

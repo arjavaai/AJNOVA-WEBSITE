@@ -57,8 +57,8 @@ export default function DocumentsPage() {
   
   async function fetchDocuments() {
     try {
-      const response = await fetch('/api/documents')
-      const data = await response.json()
+      const { documents: documentsAPI } = await import('@/lib/api-client')
+      const data = await documentsAPI.list()
       setDocuments(data.documents || [])
     } catch (error) {
       console.error('Error fetching documents:', error)

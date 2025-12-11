@@ -202,3 +202,12 @@ The site works without JavaScript (server-rendered content), then enhances with 
 **Date**: December 6, 2025
 **Impact**: Mobile navigation now hydrates correctly with zero errors
 
+
+
+
+
+
+
+
+
+

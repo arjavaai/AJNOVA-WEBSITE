@@ -43,8 +43,8 @@ export default function ProfilePage() {
 
   async function fetchProfile() {
     try {
-      const response = await fetch('/api/profile')
-      const data = await response.json()
+      const { profiles } = await import('@/lib/api-client')
+      const data = await profiles.getMyProfile()
 
       if (data.profile) {
         // Convert database format to component format
@@ -82,6 +82,8 @@ export default function ProfilePage() {
   async function handleSave() {
     setSaving(true)
     try {
+      const { profiles } = await import('@/lib/api-client')
+
       // Convert component format to database format
       const updates = {
         first_name: profile.personalInfo?.firstName,
@@ -102,20 +104,9 @@ export default function ProfilePage() {
         work_experience: profile.workExperience,
       }
 
-      const response = await fetch('/api/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        alert('Profile saved successfully!')
-        await fetchProfile() // Refresh to get updated data
-      } else {
-        alert('Failed to save profile: ' + (data.error || 'Unknown error'))
-      }
+      await profiles.updateMyProfile(updates)
+      alert('Profile saved successfully!')
+      await fetchProfile() // Refresh to get updated data
     } catch (error) {
       console.error('Error saving profile:', error)
       alert('Failed to save profile')

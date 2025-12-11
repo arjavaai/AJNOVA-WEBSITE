@@ -38,21 +38,18 @@ export default function ConsultationsPage() {
 
   async function fetchData() {
     try {
-      const [upcomingRes, historyRes, slotsRes, counsellorsRes] = await Promise.all([
-        fetch('/api/consultations?type=upcoming'),
-        fetch('/api/consultations?type=history'),
-        fetch('/api/consultations?type=slots'),
-        fetch('/api/consultations?type=counsellors')
-      ])
+      const { consultations: consultationsAPI } = await import('@/lib/api-client')
 
-      const upcomingData = await upcomingRes.json()
-      const historyData = await historyRes.json()
-      const slotsData = await slotsRes.json()
-      const counsellorsData = await counsellorsRes.json()
+      const [upcomingData, historyData, slotsData, counsellorsData] = await Promise.all([
+        consultationsAPI.list('upcoming'),
+        consultationsAPI.list('history'),
+        consultationsAPI.list('slots'),
+        consultationsAPI.list('counsellors')
+      ])
 
       setUpcomingConsultations(upcomingData.consultations || [])
       setPastConsultations(historyData.consultations || [])
-      setAvailableSlots(slotsData.slots.map((slot: any) => ({
+      setAvailableSlots(slotsData.slots?.map((slot: any) => ({
         ...slot,
         date: new Date(slot.date)
       })) || [])
@@ -78,34 +75,25 @@ export default function ConsultationsPage() {
 
     setBooking(true)
     try {
-      const response = await fetch('/api/consultations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          preferredDate: selectedDate.toISOString(),
-          preferredTime: selectedTime,
-          duration,
-          type: consultationType,
-          topic: topic || undefined,
-          counsellorId: selectedCounsellorId
-        })
+      const { consultations: consultationsAPI } = await import('@/lib/api-client')
+
+      await consultationsAPI.book({
+        scheduled_date: selectedDate.toISOString(),
+        duration_minutes: duration,
+        consultation_type: consultationType,
+        counsellor_id: selectedCounsellorId,
+        notes: topic || undefined
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setBookingSuccess(true)
-        setTimeout(() => {
-          setBookingSuccess(false)
-          resetForm()
-          fetchData()
-        }, 3000)
-      } else {
-        alert(data.error || 'Failed to book consultation')
-      }
-    } catch (error) {
+      setBookingSuccess(true)
+      setTimeout(() => {
+        setBookingSuccess(false)
+        resetForm()
+        fetchData()
+      }, 3000)
+    } catch (error: any) {
       console.error('Error booking consultation:', error)
-      alert('Failed to book consultation')
+      alert(error.message || 'Failed to book consultation')
     } finally {
       setBooking(false)
     }
@@ -122,20 +110,14 @@ export default function ConsultationsPage() {
 
   async function handleCancel(consultationId: string, reason: string) {
     try {
-      const response = await fetch(`/api/consultations/${consultationId}?reason=${encodeURIComponent(reason)}`, {
-        method: 'DELETE'
-      })
+      const { consultations: consultationsAPI } = await import('@/lib/api-client')
 
-      if (response.ok) {
-        alert('Consultation cancelled successfully')
-        fetchData()
-      } else {
-        const data = await response.json()
-        alert(data.error || 'Failed to cancel consultation')
-      }
-    } catch (error) {
+      await consultationsAPI.cancel(consultationId)
+      alert('Consultation cancelled successfully')
+      fetchData()
+    } catch (error: any) {
       console.error('Error cancelling consultation:', error)
-      alert('Failed to cancel consultation')
+      alert(error.message || 'Failed to cancel consultation')
     }
   }
 

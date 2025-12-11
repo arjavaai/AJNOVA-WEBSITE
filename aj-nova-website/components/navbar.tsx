@@ -29,7 +29,7 @@ export function Navbar() {
                 <img 
                   src="/websitelogo.png" 
                   alt="AJ NOVA Logo" 
-                  className="h-8 md:h-10 w-auto object-contain"
+                  className="h-12 md:h-14 w-auto object-contain"
                 />
               </Link>
 
@@ -46,6 +46,9 @@ export function Navbar() {
                 </a>
                 <Link href="/eligibility-checker" className="hover:text-coral transition-colors duration-200">
                   Eligibility Checker
+                </Link>
+                <Link href="/ects-calculator" className="hover:text-coral transition-colors duration-200">
+                  ECTS Calculator
                 </Link>
                 <Link href="/contact" className="hover:text-coral transition-colors duration-200">
                   Contact
@@ -106,15 +109,22 @@ export function Navbar() {
                 >
                   Services
                 </a>
-                <Link 
-                  href="/eligibility-checker" 
+                <Link
+                  href="/eligibility-checker"
                   className="text-base font-medium text-foreground hover:text-coral transition-colors py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Eligibility Checker
                 </Link>
-                <Link 
-                  href="/contact" 
+                <Link
+                  href="/ects-calculator"
+                  className="text-base font-medium text-foreground hover:text-coral transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  ECTS Calculator
+                </Link>
+                <Link
+                  href="/contact"
                   className="text-base font-medium text-foreground hover:text-coral transition-colors py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >

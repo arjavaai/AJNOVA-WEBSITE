@@ -44,8 +44,8 @@ export default function ApplicationsPage() {
   
   async function fetchApplications() {
     try {
-      const response = await fetch('/api/applications')
-      const data = await response.json()
+      const { applications: applicationsAPI } = await import('@/lib/api-client')
+      const data = await applicationsAPI.list(false)
       setApplications(data.applications || [])
     } catch (error) {
       console.error('Error fetching applications:', error)
@@ -57,8 +57,8 @@ export default function ApplicationsPage() {
 
   async function fetchStats() {
     try {
-      const response = await fetch('/api/applications?stats=true')
-      const data = await response.json()
+      const { applications: applicationsAPI } = await import('@/lib/api-client')
+      const data = await applicationsAPI.list(true)
       setStats(data.stats)
     } catch (error) {
       console.error('Error fetching stats:', error)

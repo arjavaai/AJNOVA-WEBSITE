@@ -1,342 +1,392 @@
-# AJ NOVA - Phase 1 Implementation Complete! 🎉
+# AJ NOVA Platform - Complete Setup Guide
 
-## ✅ What's Been Implemented
+## 🚀 Quick Start (5 Minutes)
 
-### 1. Database Infrastructure (100%)
-- **10 Tables Created** with Row Level Security (RLS):
-  - `users` - User accounts and authentication
-  - `profiles` - Student profile information
-  - `applications` - University applications
-  - `documents` - All document types (SOP, LOR, Resume, etc.)
-  - `messages` - Student-counsellor communication
-  - `consultations` - Meeting scheduling
-  - `aps_forms` - APS verification forms
-  - `leads` - Lead management
-  - `eligibility_results` - Eligibility checker results
-  - `notifications` - In-app notifications
+This guide will help you get the entire AJ NOVA platform running locally.
 
-- **Storage Buckets** configured:
-  - `documents` - Uploaded documents (50MB limit)
-  - `profile-photos` - User avatars (5MB limit, public)
-  - `generated-documents` - AI-generated PDFs/DOCX (50MB limit)
+### Prerequisites
 
-### 2. Authentication System (95%)
-- ✅ Supabase Auth integration
-- ✅ Google OAuth configuration (needs credentials)
-- ✅ Protected route middleware
-- ✅ Role-based access control (Student, Counsellor, Admin)
-- ✅ Login page (`/login`)
-- ✅ OAuth callback handler
-- ✅ Auth utility functions
-- ✅ Automatic user creation on first login
+Before you begin, ensure you have:
 
-### 3. API Routes Updated (100%)
-All API routes now use real Supabase data:
-- ✅ `/api/documents` - GET, POST
-- ✅ `/api/documents/[id]` - GET, PATCH
-- ✅ `/api/profile` - GET, PATCH
-- ✅ `/api/applications` - GET, POST
-- ✅ `/api/aps` - GET, PATCH, POST
+- ✅ **Node.js 18+** installed ([Download](https://nodejs.org/))
+- ✅ **Python 3.11+** installed ([Download](https://www.python.org/downloads/))
+- ✅ **pnpm** installed (`npm install -g pnpm`)
+- ✅ **Git** installed
+- ✅ A **Supabase** account (free tier is fine)
+- ✅ A **Google Cloud** account (for OAuth and Gemini)
 
-### 4. Files Created
-```
-lib/
-  ├── supabase/
-  │   ├── client.ts          # Browser client
-  │   ├── server.ts          # Server client
-  │   └── middleware.ts      # Auth middleware
-  ├── auth.ts               # Auth utilities
-app/
-  ├── login/
-  │   └── page.tsx          # Login page
-  ├── auth/
-  │   └── callback/
-  │       └── route.ts      # OAuth callback
-  ├── api/
-  │   ├── documents/
-  │   │   ├── route.ts      # Updated
-  │   │   └── [id]/route.ts # Updated
-  │   ├── profile/
-  │   │   └── route.ts      # New
-  │   ├── applications/
-  │   │   └── route.ts      # Updated
-  │   └── aps/
-  │       └── route.ts      # Updated
-middleware.ts              # Root middleware
+### Step-by-Step Setup
+
+## 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/arjavaai/AJNOVA-WEBSITE.git
+cd AJNOVA-WEBSITE
 ```
 
----
+## 2️⃣ Set Up Supabase Database
 
-## 🔧 Setup Instructions
+### Create Supabase Project
 
-### Step 1: Configure Google OAuth
+1. Go to [https://supabase.com](https://supabase.com)
+2. Click "New Project"
+3. Enter project details and create
+4. Wait for the project to be ready (~2 minutes)
 
-1. **Go to Supabase Dashboard**:
-   - Navigate to: https://supabase.com/dashboard/project/jvssfdlouhwxioahvame
+### Apply Database Migration
 
-2. **Enable Google OAuth Provider**:
-   - Go to **Authentication** → **Providers**
-   - Find **Google** and click **Enable**
+1. Go to your Supabase project dashboard
+2. Navigate to **SQL Editor**
+3. Click "New query"
+4. Open `backend/supabase/migrations/001_initial_schema.sql`
+5. Copy all contents and paste into the SQL Editor
+6. Click "Run" to execute the migration
+7. You should see "Success. No rows returned"
 
-3. **Get Google OAuth Credentials**:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select existing one
-   - Go to **APIs & Services** → **Credentials**
-   - Click **Create Credentials** → **OAuth 2.0 Client ID**
-   - Application type: **Web application**
-   - Add authorized redirect URIs:
-     ```
-     https://jvssfdlouhwxioahvame.supabase.co/auth/v1/callback
-     http://localhost:3000/auth/callback
-     ```
-   - Click **Create** and copy:
-     - Client ID
-     - Client Secret
+### Configure Storage
 
-4. **Configure in Supabase**:
-   - Paste **Client ID** and **Client Secret** in Supabase Google provider settings
-   - Click **Save**
+1. Go to **Storage** in your Supabase dashboard
+2. Click "Create a new bucket"
+3. Name: `documents`
+4. Set as **Private**
+5. Click "Create bucket"
 
-### Step 2: Update Environment Variables
+### Get Your Credentials
 
-No changes needed! Your `.env.local` is already configured:
+1. Go to **Settings** → **API**
+2. Note down:
+   - **Project URL** (e.g., https://abcdef.supabase.co)
+   - **anon/public key** (starts with `eyJ...`)
+   - **service_role key** (starts with `eyJ...`)
+
+## 3️⃣ Set Up Google Services
+
+### Google OAuth
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Go to **APIs & Services** → **Credentials**
+4. Click "Create Credentials" → "OAuth 2.0 Client ID"
+5. Choose "Web application"
+6. Add authorized redirect URIs:
+   - `http://localhost:8000/api/v1/auth/google/callback`
+   - Add your production URL later
+7. Click "Create"
+8. Note down **Client ID** and **Client Secret**
+
+### Google Gemini API
+
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Click "Get API Key"
+3. Create API key
+4. Note it down
+
+## 4️⃣ Configure Backend
+
+```bash
+cd backend
+
+# Copy environment template
+cp env.example .env
+
+# Edit .env file with your credentials
+# (Use your favorite editor: nano, vim, notepad, VSCode, etc.)
+```
+
+**Edit `.env` file:**
+
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://jvssfdlouhwxioahvame.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[already configured]
-GEMINI_API_KEY=[already configured]
+# Backend Configuration
+ENVIRONMENT=development
+DEBUG=True
+BACKEND_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:3000
+
+# Security - Generate a random string for SECRET_KEY
+SECRET_KEY=your-super-secret-key-change-this-to-random-string
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=10080
+
+# Supabase (from Step 2)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key-here
+SUPABASE_SERVICE_KEY=your-service-key-here
+
+# Google OAuth (from Step 3)
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/auth/google/callback
+
+# Google Gemini AI (from Step 3)
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-1.5-pro
+
+# Email (Optional - can skip for now)
+SENDGRID_API_KEY=
+FROM_EMAIL=noreply@ajnova.com
+
+# Rate Limiting
+RATE_LIMIT_REQUESTS=100
+RATE_LIMIT_PERIOD=60
+
+# File Upload
+MAX_FILE_SIZE=10485760
 ```
 
-### Step 3: Test the Application
+### Install Dependencies
 
-1. **Start Development Server**:
-   ```bash
-   npm run dev
-   ```
-
-2. **Test Authentication Flow**:
-   - Navigate to: http://localhost:3000/login
-   - Click "Continue with Google"
-   - Sign in with your Google account
-   - You should be redirected to `/dashboard`
-
-3. **Verify Database**:
-   - Check Supabase dashboard → **Table Editor**
-   - You should see your user in the `users` table
-   - A profile should be created in the `profiles` table
-
-### Step 4: Create Test Accounts
-
-#### Option A: Via Google OAuth (Automatic)
-- Just log in - user is created automatically as a **student**
-
-#### Option B: Create Admin/Counsellor Manually
-1. Go to Supabase Dashboard → **Table Editor** → `users`
-2. Insert a new row:
-   ```json
-   {
-     "email": "admin@ajnova.com",
-     "name": "Admin User",
-     "role": "admin",
-     "status": "active"
-   }
-   ```
-
-#### Option C: Via SQL (Recommended for testing)
-Run this in Supabase SQL Editor:
-```sql
--- Create test admin
-INSERT INTO users (email, name, role, status)
-VALUES ('admin@ajnova.com', 'Test Admin', 'admin', 'active');
-
--- Create test counsellor
-INSERT INTO users (email, name, role, status)
-VALUES ('counsellor@ajnova.com', 'Test Counsellor', 'counsellor', 'active');
-```
-
----
-
-## 🧪 Testing Checklist
-
-### Authentication
-- [ ] Login with Google OAuth
-- [ ] User created in database automatically
-- [ ] Profile created for student users
-- [ ] Redirected to `/dashboard` after login
-- [ ] Protected routes redirect to `/login` when not authenticated
-- [ ] Admin can't access student-only pages
-- [ ] Students can't access admin pages
-
-### API Endpoints
-- [ ] GET `/api/profile` - Returns user profile
-- [ ] PATCH `/api/profile` - Updates profile
-- [ ] GET `/api/documents` - Returns user documents
-- [ ] POST `/api/documents` - Creates new document
-- [ ] GET `/api/applications` - Returns user applications
-- [ ] GET `/api/aps` - Returns APS form
-
-### Database
-- [ ] All tables visible in Supabase
-- [ ] RLS policies working (users can only see their own data)
-- [ ] Storage buckets created
-- [ ] Migrations applied successfully
-
----
-
-## 📊 Database Schema Overview
-
-### Key Tables
-
-**users** - Core user accounts
-- `id` (UUID, PK)
-- `email`, `name`, `role` (student/counsellor/admin)
-- `google_id`, `profile_photo_url`
-- RLS: Users can view/edit own data, admins can view all
-
-**profiles** - Student profiles
-- `user_id` (FK → users)
-- Personal info (name, DOB, nationality, passport)
-- Academic info (qualification, institution, CGPA)
-- Language scores (English, German)
-- `completion_percentage` - Auto-calculated
-- RLS: Students own, counsellors can view
-
-**applications** - University applications
-- `student_id`, `counsellor_id`
-- `university`, `program`, `intake`
-- `status` (draft → applied → under_review → accepted/rejected)
-- `timeline` (JSONB) - Status history
-- RLS: Students own, counsellors assigned
-
-**documents** - All document types
-- Types: sop, lor, resume, cover_letter, aps, transcript, etc.
-- `status` (draft → submitted → approved/rejected)
-- `version` - Document versioning
-- `file_url` - Storage link
-- RLS: Students own, counsellors can review
-
----
-
-## 🚀 Next Steps (Phase 2)
-
-### Immediate Priorities
-
-1. **Update Frontend Components** (2-3 days)
-   - Replace mock data hooks with real API calls
-   - Update dashboard to fetch real data
-   - Add loading states and error handling
-
-2. **File Upload Integration** (1 day)
-   - Implement file upload to Supabase Storage
-   - Update profile photo upload
-   - Document upload for APS form
-
-3. **Email Notifications** (1 day)
-   - Choose service (Resend/SendGrid)
-   - Create email templates
-   - Send on status changes
-
-4. **Admin Dashboard Features** (1-2 weeks)
-   - Lead management system
-   - Application management
-   - Document review queue
-   - Service tracking
-   - Analytics dashboard
-
-### Future Enhancements
-
-5. **Real-time Features** (3-4 days)
-   - Live notifications
-   - Real-time messaging
-   - Status updates
-
-6. **Advanced Features** (1-2 weeks)
-   - Search and filters
-   - Bulk operations
-   - Export functionality
-   - Advanced analytics
-
----
-
-## 🐛 Troubleshooting
-
-### Database Connection Issues
 ```bash
-# Verify Supabase connection
-npx supabase status
+pip install -r requirements.txt
 ```
 
-### Authentication Not Working
-1. Check Google OAuth credentials in Supabase
-2. Verify redirect URLs match exactly
-3. Check browser console for errors
-4. Ensure cookies are enabled
+### Start Backend Server
 
-### API Errors
-- Check Supabase logs in Dashboard
-- Verify RLS policies
-- Check user role in database
-- Look at Network tab in DevTools
-
-### Development Server Issues
+**Windows:**
 ```bash
-# Clear cache and restart
-rm -rf .next
-npm run dev
+.\start_server.bat
 ```
 
----
+**macOS/Linux:**
+```bash
+python -m uvicorn app.main:app --reload --port 8000
+```
 
-## 📝 Important Notes
+You should see:
+```
+🚀 Starting AJ NOVA Backend API...
+📍 Environment: development
+🔗 API URL: http://localhost:8000
+INFO:     Application startup complete.
+```
 
-### Security
-- **RLS is enabled** on all tables - data is protected
-- **Google OAuth** is the only auth method for students
-- **Admin accounts** need to be created manually
-- **Storage policies** prevent unauthorized file access
+**Open in browser:** http://localhost:8000/api/docs
 
-### Performance
-- All queries have indexes for performance
-- Pagination should be added for large datasets
-- Consider caching for frequently accessed data
+You should see the interactive API documentation! 🎉
 
-### Data Migration
-- Mock data files can be removed once frontend is updated
-- Import existing students via SQL if needed
-- Backup before making schema changes
+## 5️⃣ Configure Frontend
 
----
+Open a **NEW terminal** (keep backend running):
 
-## 🎯 Success Metrics
+```bash
+cd aj-nova-website
 
-Phase 1 is **95% complete**!
+# Install dependencies
+pnpm install
 
-**Completed**:
-- ✅ Database schema (100%)
-- ✅ Authentication system (95%)
-- ✅ API routes (100%)
-- ✅ Storage configuration (100%)
-- ✅ Security (RLS) (100%)
+# Create environment file
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > .env.local
+echo "GEMINI_API_KEY=your-gemini-api-key" >> .env.local
 
-**Remaining**:
-- ⏳ Google OAuth credentials (5 minutes)
-- ⏳ Frontend integration (2-3 days)
-- ⏳ Admin features (1-2 weeks)
+# Start development server
+pnpm dev
+```
 
----
+You should see:
+```
+  ▲ Next.js 16.0.7 (Turbopack)
+  - Local:         http://localhost:3000
+  - Network:       http://192.168.1.x:3000
 
-## 📞 Support
+✓ Ready in 2.3s
+```
 
-If you encounter any issues:
-1. Check the Troubleshooting section
-2. Review Supabase logs
-3. Check browser console for errors
-4. Verify environment variables
+**Open in browser:** http://localhost:3000
 
-**Database URL**: https://jvssfdlouhwxioahvame.supabase.co
-**Project Dashboard**: https://supabase.com/dashboard/project/jvssfdlouhwxioahvame
+You should see the AJ NOVA landing page! 🎉
 
----
+## 6️⃣ Test the System
 
-**Last Updated**: December 5, 2025
-**Version**: 1.0
-**Status**: Phase 1 Complete - Ready for Testing
+### Test Backend API
+
+1. Go to http://localhost:8000/api/docs
+2. Try the "Health Check" endpoint:
+   - Expand `GET /health`
+   - Click "Try it out"
+   - Click "Execute"
+   - You should see: `{"status": "healthy", ...}`
+
+### Test Frontend
+
+1. Go to http://localhost:3000
+2. You should see the landing page
+3. Navigate to different sections
+
+### Test Authentication (Optional)
+
+1. Click "Login" on the frontend
+2. You'll be redirected to Google OAuth
+3. After login, you'll be redirected back
+4. You should see the dashboard
+
+## 🎯 Common Issues & Solutions
+
+### Backend Issues
+
+**❌ ModuleNotFoundError: No module named 'app'**
+- **Solution:** Make sure you're in the `backend` directory when running uvicorn
+- Run: `cd backend && python -m uvicorn app.main:app --reload --port 8000`
+
+**❌ DLL load failed (cryptography error on Windows)**
+- **Solution:** 
+  ```bash
+  pip uninstall cryptography
+  pip install cryptography==41.0.7
+  ```
+
+**❌ Port 8000 already in use**
+- **Solution:** Kill the process or use a different port:
+  ```bash
+  # Windows
+  netstat -ano | findstr :8000
+  taskkill /PID <PID> /F
+  
+  # macOS/Linux
+  lsof -ti:8000 | xargs kill -9
+  ```
+
+**❌ Supabase connection error**
+- **Solution:** Verify your SUPABASE_URL and SUPABASE_SERVICE_KEY are correct
+- Make sure there are no trailing spaces
+- Ensure migration was applied successfully
+
+**❌ Google OAuth error**
+- **Solution:** 
+  - Verify GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
+  - Check redirect URI matches exactly
+  - Ensure OAuth consent screen is configured
+
+### Frontend Issues
+
+**❌ Port 3000 already in use**
+- **Solution:** Next.js will automatically use the next available port (3001, 3002, etc.)
+
+**❌ Module not found errors**
+- **Solution:**
+  ```bash
+  rm -rf node_modules .next
+  pnpm install
+  ```
+
+**❌ Can't connect to backend**
+- **Solution:** 
+  - Verify backend is running on port 8000
+  - Check NEXT_PUBLIC_API_URL in .env.local
+  - Open browser console for error details
+
+### Database Issues
+
+**❌ Migration failed**
+- **Solution:**
+  - Copy migration file content carefully
+  - Run in Supabase SQL Editor, not local psql
+  - Check for any syntax errors highlighted
+
+**❌ RLS policy errors**
+- **Solution:** For development, you can temporarily disable RLS:
+  ```sql
+  ALTER TABLE table_name DISABLE ROW LEVEL SECURITY;
+  ```
+
+## 📁 Project Structure
+
+```
+AJNOVA-WEBSITE/
+├── backend/                     # FastAPI Backend ✅
+│   ├── app/
+│   │   ├── main.py             # Entry point
+│   │   ├── api/v1/             # API endpoints
+│   │   ├── models/             # Data models
+│   │   ├── services/           # Business logic
+│   │   └── middleware/         # Middleware
+│   ├── .env                    # Your config (NOT in git)
+│   ├── env.example             # Template
+│   └── requirements.txt        # Dependencies
+│
+├── aj-nova-website/            # Next.js Frontend ✅
+│   ├── app/                    # Pages
+│   ├── components/             # Components
+│   ├── lib/                    # Utilities
+│   └── .env.local              # Your config (NOT in git)
+│
+└── PRD/                        # Documentation
+```
+
+## 🔐 Security Notes
+
+- ⚠️ **Never commit `.env` or `.env.local` files to git**
+- ⚠️ Use strong, random strings for `SECRET_KEY`
+- ⚠️ Keep API keys secure and rotate them regularly
+- ⚠️ Use HTTPS in production
+- ⚠️ Enable RLS policies in Supabase for production
+
+## 📚 Next Steps
+
+### For Development:
+
+1. ✅ **Read the documentation:**
+   - `COMPLETE_IMPLEMENTATION_GUIDE.md` - Full overview
+   - `backend/README.md` - Backend details
+   - `backend/DEPLOYMENT.md` - Deployment guide
+
+2. ✅ **Explore the API:**
+   - Open http://localhost:8000/api/docs
+   - Try different endpoints
+   - Understand the data models
+
+3. ✅ **Understand the frontend:**
+   - Check `aj-nova-website/app/` for page structure
+   - Review components in `aj-nova-website/components/`
+   - See mock data in `aj-nova-website/lib/mock-data.ts`
+
+4. ✅ **Connect frontend to backend:**
+   - Use the API client in `aj-nova-website/lib/api-client.ts`
+   - Replace mock data with real API calls
+   - Implement authentication flow
+
+### For Production:
+
+1. ✅ **Deploy backend:**
+   - Follow `backend/DEPLOYMENT.md`
+   - Use Railway, Render, or AWS
+
+2. ✅ **Deploy frontend:**
+   - Deploy to Vercel (recommended for Next.js)
+   - Update environment variables
+   - Configure custom domain
+
+3. ✅ **Configure services:**
+   - Update Google OAuth redirect URIs
+   - Set production CORS origins
+   - Enable monitoring and logging
+
+## 🆘 Getting Help
+
+If you encounter issues:
+
+1. Check this guide thoroughly
+2. Review error messages carefully
+3. Check the API docs: http://localhost:8000/api/docs
+4. Review the implementation guide: `COMPLETE_IMPLEMENTATION_GUIDE.md`
+5. Check terminal logs for both frontend and backend
+
+## ✅ Verification Checklist
+
+After setup, verify everything works:
+
+- [ ] Backend server starts without errors
+- [ ] Frontend server starts without errors
+- [ ] Can access http://localhost:8000/api/docs
+- [ ] Can access http://localhost:3000
+- [ ] Health check endpoint returns success
+- [ ] Can view database tables in Supabase dashboard
+- [ ] Environment variables are set correctly
+
+## 🎉 Success!
+
+Congratulations! You now have the complete AJ NOVA platform running locally. 
+
+**Backend:** http://localhost:8000
+**Frontend:** http://localhost:3000
+**API Docs:** http://localhost:8000/api/docs
+
+Happy coding! 🚀

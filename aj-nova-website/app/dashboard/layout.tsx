@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FileText, Home, User, Building2, ClipboardCheck, LogOut, Menu, X } from 'lucide-react'
+import { FileText, Home, User, Building2, ClipboardCheck, Calculator, LogOut, Menu, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -38,13 +38,13 @@ export default function DashboardLayout({
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
               
               {/* Content */}
-              <div className="relative px-4 md:px-6 h-14 flex items-center justify-between">
+              <div className="relative px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center">
                   <img 
                     src="/websitelogo.png" 
                     alt="AJ NOVA Logo" 
-                    className="h-7 md:h-8 w-auto object-contain"
+                    className="h-12 md:h-14 w-auto object-contain"
                   />
                 </Link>
 
@@ -71,12 +71,19 @@ export default function DashboardLayout({
                     <FileText className="w-4 h-4" />
                     Documents
                   </Link>
-                  <Link 
+                  <Link
                     href="/dashboard/aps-form"
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-all"
                   >
                     <ClipboardCheck className="w-4 h-4" />
                     APS Form
+                  </Link>
+                  <Link
+                    href="/dashboard/ects-calculator"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-all"
+                  >
+                    <Calculator className="w-4 h-4" />
+                    ECTS
                   </Link>
                 </nav>
 
@@ -149,7 +156,7 @@ export default function DashboardLayout({
                   <FileText className="w-5 h-5" />
                   Documents
                 </Link>
-                <Link 
+                <Link
                   href="/dashboard/aps-form"
                   className="flex items-center gap-3 text-base font-medium text-foreground hover:text-primary transition-colors py-2"
                   onClick={() => setMobileMenuOpen(false)}
@@ -157,7 +164,15 @@ export default function DashboardLayout({
                   <ClipboardCheck className="w-5 h-5" />
                   APS Form
                 </Link>
-                
+                <Link
+                  href="/dashboard/ects-calculator"
+                  className="flex items-center gap-3 text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Calculator className="w-5 h-5" />
+                  ECTS Calculator
+                </Link>
+
                 <div className="pt-4 border-t border-border space-y-3">
                   <Link 
                     href="/dashboard/profile"
