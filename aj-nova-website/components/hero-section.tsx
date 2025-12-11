@@ -23,7 +23,7 @@ export function HeroSection() {
             here.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-            <BeamButton primary className="w-full sm:w-auto justify-center">
+            <BeamButton primary className="w-full sm:w-auto justify-center" href="/eligibility-checker">
               Check Eligibility <ArrowRight className="w-4 h-4" />
             </BeamButton>
             <BeamButton className="w-full sm:w-auto justify-center">Book Consultation</BeamButton>
