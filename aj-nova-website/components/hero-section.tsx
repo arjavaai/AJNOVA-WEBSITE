@@ -19,35 +19,14 @@ export function HeroSection() {
             </span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 md:mb-10 max-w-lg leading-relaxed">
-            AI-powered admissions, personalized counselling, and a 97% visa success rate. Your future in Germany starts
+            AI-powered admissions, personalized counselling, and comprehensive support. Your future in Germany starts
             here.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
             <BeamButton primary className="w-full sm:w-auto justify-center" href="/eligibility-checker">
               Check Eligibility <ArrowRight className="w-4 h-4" />
             </BeamButton>
-            <BeamButton className="w-full sm:w-auto justify-center">Book Consultation</BeamButton>
-          </div>
-
-          <div className="mt-8 md:mt-12 flex items-center gap-3 md:gap-4 text-sm text-muted-foreground">
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-card bg-muted flex items-center justify-center text-xs overflow-hidden shadow-sm"
-                >
-                  <img
-                    src={`https://i.pravatar.cc/100?img=${i + 10}`}
-                    alt="User"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-            <div>
-              <p className="text-foreground font-bold text-sm md:text-base">3,000+ Students</p>
-              <p className="text-xs md:text-sm">Placed in top universities</p>
-            </div>
+            <BeamButton className="w-full sm:w-auto justify-center" href="/contact">Book Consultation</BeamButton>
           </div>
         </div>
 

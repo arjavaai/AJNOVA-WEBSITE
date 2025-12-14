@@ -154,8 +154,22 @@ export default function EligibilityCheckerPage() {
   const getResultStyles = () => {
     if (!result) return null;
 
+    // Check if it's the "Additional Steps Required" case
+    const isAdditionalStepsRequired = result.badge.label === "Additional Steps Required";
+
     switch (result.level) {
       case "PUBLIC_ELIGIBLE":
+        if (isAdditionalStepsRequired) {
+          return {
+            icon: AlertTriangle,
+            bgColor: "bg-amber-500/10",
+            borderColor: "border-amber-500/30",
+            textColor: "text-amber-500",
+            barColor: "bg-amber-500",
+            emoji: "⚠️",
+            headline: "Additional Steps Required",
+          };
+        }
         return {
           icon: CheckCircle,
           bgColor: "bg-green-500/10",
@@ -173,7 +187,7 @@ export default function EligibilityCheckerPage() {
           textColor: "text-amber-500",
           barColor: "bg-amber-500",
           emoji: "⚠️",
-          headline: "Eligible for Private Universities",
+          headline: "Additional Steps Required",
         };
       case "NEEDS_IMPROVEMENT":
         return {
@@ -183,7 +197,7 @@ export default function EligibilityCheckerPage() {
           textColor: "text-red-500",
           barColor: "bg-red-500",
           emoji: "❌",
-          headline: "Currently Not Eligible",
+          headline: "Does Not Meet Requirements",
         };
     }
   };
@@ -517,10 +531,10 @@ export default function EligibilityCheckerPage() {
                 </div>
               </div>
 
-              {/* Readiness Meter */}
+              {/* Profile Strength Indicator */}
               <FlashlightCard className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-bold text-foreground">Readiness Score</h3>
+                  <h3 className="text-lg font-bold text-foreground">Profile Strength</h3>
                   <span className={`text-2xl font-bold ${resultStyles.textColor}`}>
                     {result.readinessScore}%
                   </span>
@@ -531,89 +545,67 @@ export default function EligibilityCheckerPage() {
                     style={{ width: `${result.readinessScore}%` }}
                   />
                 </div>
-                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                  <span>0</span>
-                  <span className="text-red-500">50 (Needs Improvement)</span>
-                  <span className="text-amber-500">70 (Private)</span>
-                  <span className="text-green-500">100 (Public)</span>
-                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  This is a preliminary indicator based on your qualifications and language proficiency. Final eligibility depends on APS verification and individual university criteria.
+                </p>
               </FlashlightCard>
 
-              {/* Score Breakdown */}
+              {/* Assessment Breakdown */}
               <FlashlightCard className="p-6">
-                <h3 className="text-lg font-bold text-foreground mb-4">Score Breakdown</h3>
+                <h3 className="text-lg font-bold text-foreground mb-4">Assessment Summary</h3>
                 <div className="space-y-4">
-                  {/* Academic Score */}
-                  <div>
-                    <div className="flex justify-between mb-1 text-sm">
-                      <span className="text-muted-foreground">Academic Score</span>
-                      <span className="font-medium text-foreground">
-                        {result.breakdown.academicScore}/{result.breakdown.academicMax}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-coral rounded-full"
-                        style={{
-                          width: `${(result.breakdown.academicScore / result.breakdown.academicMax) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
+                  {/* Academic Qualification */}
+                  {result.assessmentDetails && (
+                    <>
+                      <div>
+                        <div className="flex items-start gap-3">
+                          <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${result.breakdown.academicScore > 0 ? 'text-green-500' : 'text-red-500'}`} />
+                          <div>
+                            <p className="font-medium text-foreground">Academic Qualification</p>
+                            <p className="text-sm text-muted-foreground">{result.assessmentDetails.academic}</p>
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* English Proficiency */}
-                  <div>
-                    <div className="flex justify-between mb-1 text-sm">
-                      <span className="text-muted-foreground">English Proficiency</span>
-                      <span className="font-medium text-foreground">
-                        {result.breakdown.englishScore}/{result.breakdown.englishMax}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-coral rounded-full"
-                        style={{
-                          width: `${(result.breakdown.englishScore / result.breakdown.englishMax) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
+                      {/* English Proficiency */}
+                      <div>
+                        <div className="flex items-start gap-3">
+                          <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${result.breakdown.englishScore > 0 ? 'text-green-500' : 'text-amber-500'}`} />
+                          <div>
+                            <p className="font-medium text-foreground">English Proficiency</p>
+                            <p className="text-sm text-muted-foreground">{result.assessmentDetails.english}</p>
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* German Level */}
-                  <div>
-                    <div className="flex justify-between mb-1 text-sm">
-                      <span className="text-muted-foreground">German Language</span>
-                      <span className="font-medium text-foreground">
-                        {result.breakdown.germanScore}/{result.breakdown.germanMax}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-coral rounded-full"
-                        style={{
-                          width: `${(result.breakdown.germanScore / result.breakdown.germanMax) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
+                      {/* German Proficiency */}
+                      <div>
+                        <div className="flex items-start gap-3">
+                          <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${result.breakdown.germanScore > 0 ? 'text-green-500' : 'text-muted-foreground'}`} />
+                          <div>
+                            <p className="font-medium text-foreground">German Proficiency</p>
+                            <p className="text-sm text-muted-foreground">{result.assessmentDetails.german}</p>
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* Work Experience */}
-                  <div>
-                    <div className="flex justify-between mb-1 text-sm">
-                      <span className="text-muted-foreground">Work Experience</span>
-                      <span className="font-medium text-foreground">
-                        {result.breakdown.workExperienceScore}/{result.breakdown.workExperienceMax}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-coral rounded-full"
-                        style={{
-                          width: `${(result.breakdown.workExperienceScore / result.breakdown.workExperienceMax) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
+                      {/* Work Experience - Not Required */}
+                      <div>
+                        <div className="flex items-start gap-3">
+                          <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium text-foreground">Work Experience</p>
+                            <p className="text-sm text-muted-foreground">Not required for eligibility</p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                    ⚠️ Disclaimer: This assessment is preliminary. Final eligibility depends on university review and document verification.
+                  </p>
                 </div>
               </FlashlightCard>
 
@@ -671,6 +663,11 @@ export default function EligibilityCheckerPage() {
     </div>
   );
 }
+
+
+
+
+
 
 
 

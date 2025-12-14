@@ -1,10 +1,11 @@
 import { FlashlightCard } from "./flashlight-card"
-import { CheckCircle, Lock, Plane, Award, Coins, Home } from "lucide-react"
+import { CheckCircle, Lock, Plane, Award, Coins, Home, ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 const features = [
   {
     title: "Eligibility Checker",
-    desc: "Instant evaluation of your profile against 500+ courses.",
+    desc: "Instant evaluation of your profile for German university admission requirements.",
     icon: CheckCircle,
   },
   {
@@ -59,6 +60,16 @@ export function FeaturesGrid() {
               </FlashlightCard>
             )
           })}
+        </div>
+
+        <div className="text-center mt-12">
+          <Link
+            href="/services"
+            className="inline-flex items-center gap-2 text-coral hover:text-coral/80 font-semibold transition-colors"
+          >
+            Learn More About Our Services
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

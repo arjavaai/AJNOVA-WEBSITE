@@ -15,8 +15,8 @@ const rotatingCards = [
   },
   {
     id: 2,
-    title: "University Matchmaker",
-    desc: "Algorithmic matching across 300+ German universities to find your highest probability of acceptance.",
+    title: "Smart University Selection",
+    desc: "Get personalized guidance to find the best-fit German universities for your profile and goals.",
     gradientFrom: "#F25C45",
     gradientTo: "#E84A2F",
     icon: Building2,

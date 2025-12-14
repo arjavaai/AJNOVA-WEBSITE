@@ -128,8 +128,8 @@ const features = [
   },
   {
     icon: CheckCircle,
-    title: "High Success Rate",
-    description: "97% visa success rate with 3,000+ students successfully placed"
+    title: "Proven Track Record",
+    description: "Comprehensive support with dedicated counsellors guiding you through every step"
   }
 ];
 

@@ -60,8 +60,8 @@ export function Navbar() {
                 <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-coral transition-colors duration-200">
                   Login
                 </Link>
-                <BeamButton primary className="text-sm px-5 py-2">
-                  Free Consultation
+                <BeamButton className="text-sm px-5 py-2" href="/login">
+                  Sign Up
                 </BeamButton>
               </div>
 
@@ -132,15 +132,15 @@ export function Navbar() {
                 </Link>
                 
                 <div className="pt-4 border-t border-border space-y-3">
-                  <Link 
-                    href="/login" 
+                  <Link
+                    href="/login"
                     className="block text-center text-base font-medium text-foreground hover:text-coral transition-colors py-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Login
                   </Link>
-                  <BeamButton primary className="w-full text-sm px-5 py-3" onClick={() => setMobileMenuOpen(false)}>
-                    Free Consultation
+                  <BeamButton className="w-full text-sm px-5 py-3" href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    Sign Up
                   </BeamButton>
                 </div>
               </nav>

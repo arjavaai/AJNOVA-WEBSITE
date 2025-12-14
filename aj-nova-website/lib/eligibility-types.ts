@@ -64,6 +64,12 @@ export interface EligibilityResult {
   message: string
   recommendations: string[]
   nextSteps: string[]
+  assessmentDetails?: {
+    academic: string
+    english: string
+    german: string
+    needsStudienkolleg: boolean
+  }
 }
 
 export interface EligibilityHistory {

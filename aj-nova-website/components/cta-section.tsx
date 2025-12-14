@@ -9,7 +9,7 @@ export function CtaSection() {
         <div className="relative z-10">
           <h2 className="text-4xl md:text-6xl font-display font-bold mb-6 text-foreground">Ready to fly?</h2>
           <p className="text-xl text-foreground/60 mb-10 max-w-2xl mx-auto">
-            Join 3,000+ students who achieved their German education dream.
+            Start your journey to German education today.
           </p>
           <BeamButton primary className="text-lg px-10 py-4 mx-auto">
             Start Free Application

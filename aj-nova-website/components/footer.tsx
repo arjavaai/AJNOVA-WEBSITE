@@ -24,17 +24,17 @@ export function Footer() {
           <h4 className="text-foreground font-display font-bold mb-4">Company</h4>
           <ul className="space-y-2">
             <li>
-              <a href="#" className="text-muted-foreground hover:text-coral transition">
+              <a href="/about" className="text-muted-foreground hover:text-coral transition">
                 About
               </a>
             </li>
             <li>
-              <a href="#" className="text-muted-foreground hover:text-coral transition">
-                Careers
+              <a href="/services" className="text-muted-foreground hover:text-coral transition">
+                Services
               </a>
             </li>
             <li>
-              <a href="#" className="text-muted-foreground hover:text-coral transition">
+              <a href="/contact" className="text-muted-foreground hover:text-coral transition">
                 Contact
               </a>
             </li>
@@ -44,18 +44,18 @@ export function Footer() {
           <h4 className="text-foreground font-display font-bold mb-4">Resources</h4>
           <ul className="space-y-2">
             <li>
-              <a href="#" className="text-muted-foreground hover:text-coral transition">
-                Blog
+              <a href="/eligibility-checker" className="text-muted-foreground hover:text-coral transition">
+                Eligibility Checker
               </a>
             </li>
             <li>
-              <a href="#" className="text-muted-foreground hover:text-coral transition">
-                Visa Guide
+              <a href="/ects-calculator" className="text-muted-foreground hover:text-coral transition">
+                ECTS Calculator
               </a>
             </li>
             <li>
-              <a href="#" className="text-muted-foreground hover:text-coral transition">
-                Checklist
+              <a href="#faq" className="text-muted-foreground hover:text-coral transition">
+                FAQ
               </a>
             </li>
           </ul>
@@ -64,13 +64,13 @@ export function Footer() {
           <h4 className="text-foreground font-display font-bold mb-4">Legal</h4>
           <ul className="space-y-2">
             <li>
-              <a href="#" className="text-muted-foreground hover:text-coral transition">
-                Privacy
+              <a href="#privacy" className="text-muted-foreground hover:text-coral transition">
+                Privacy Policy
               </a>
             </li>
             <li>
-              <a href="#" className="text-muted-foreground hover:text-coral transition">
-                Terms
+              <a href="#terms" className="text-muted-foreground hover:text-coral transition">
+                Terms of Service
               </a>
             </li>
           </ul>

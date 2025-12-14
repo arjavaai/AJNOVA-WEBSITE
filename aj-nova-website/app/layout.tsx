@@ -4,6 +4,7 @@ import { Inter, Space_Grotesk } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { QueryProvider } from "@/components/providers/query-provider"
+import { ChatbotWidget } from "@/components/chatbot-widget"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
@@ -14,9 +15,9 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: "AJ NOVA | Future of Admissions",
+  title: "AJ NOVA | Gateway to German Universities",
   description:
-    "AI-powered admissions, personalized counselling, and a 97% visa success rate. Your future in Germany starts here.",
+    "AI-powered admissions, personalized counselling, and comprehensive support. Your future in Germany starts here.",
   generator: 'v0.app',
   icons: {
     icon: '/favicon.png',
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
         <QueryProvider>
           {children}
+          <ChatbotWidget />
         </QueryProvider>
         <Analytics />
         {process.env.NEXT_PUBLIC_GA_ID && (

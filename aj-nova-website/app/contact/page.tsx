@@ -236,16 +236,16 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4">
             <div className="text-center p-6 border-b md:border-b-0 md:border-r border-border">
-              <div className="text-4xl md:text-5xl font-display font-bold text-coral mb-2">3,000+</div>
-              <p className="text-muted-foreground font-medium">Students Placed</p>
+              <div className="text-4xl md:text-5xl font-display font-bold text-coral mb-2">Expert</div>
+              <p className="text-muted-foreground font-medium">Counsellors</p>
             </div>
             <div className="text-center p-6 border-b md:border-b-0 md:border-r border-border">
-              <div className="text-4xl md:text-5xl font-display font-bold text-coral mb-2">12+</div>
-              <p className="text-muted-foreground font-medium">Partner Universities</p>
+              <div className="text-4xl md:text-5xl font-display font-bold text-coral mb-2">24/7</div>
+              <p className="text-muted-foreground font-medium">Support Available</p>
             </div>
             <div className="text-center p-6">
-              <div className="text-4xl md:text-5xl font-display font-bold text-coral mb-2">97%</div>
-              <p className="text-muted-foreground font-medium">Visa Success Rate</p>
+              <div className="text-4xl md:text-5xl font-display font-bold text-coral mb-2">AI-Powered</div>
+              <p className="text-muted-foreground font-medium">Document Generation</p>
             </div>
           </div>
         </div>

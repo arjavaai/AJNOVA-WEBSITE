@@ -122,3 +122,8 @@ async def get_profile_completion(
 
 
 
+
+
+
+
+

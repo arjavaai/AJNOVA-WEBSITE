@@ -5,10 +5,10 @@ import { Footer } from "@/components/footer";
 import { Target, Users, Award, TrendingUp, CheckCircle } from "lucide-react";
 
 const stats = [
-  { value: "3,000+", label: "Students Placed" },
-  { value: "12+", label: "Partner Universities" },
-  { value: "97%", label: "Visa Success Rate" },
-  { value: "500+", label: "Successful Applications" }
+  { value: "Expert", label: "Counsellors" },
+  { value: "24/7", label: "Support" },
+  { value: "AI-Powered", label: "Documents" },
+  { value: "Verified", label: "Services" }
 ];
 
 const values = [
@@ -36,9 +36,9 @@ const values = [
 
 const achievements = [
   "Founded with a vision to simplify German university admissions",
-  "Successfully placed 3,000+ students in top German universities",
-  "Partnerships with 12+ leading German universities",
-  "97% visa success rate - industry-leading",
+  "Comprehensive support for every step of your journey",
+  "Partnerships with educational service providers",
+  "Expert guidance from experienced counsellors",
   "AI-powered document generation system",
   "24/7 student support and guidance"
 ];
@@ -161,7 +161,7 @@ export default function AboutPage() {
               },
               {
                 title: "Proven Track Record",
-                description: "With a 97% visa success rate and 3,000+ students placed, we have a history of delivering results."
+                description: "Our experienced team has successfully guided numerous students through the German university admission process."
               },
               {
                 title: "Personalized Approach",
@@ -188,7 +188,7 @@ export default function AboutPage() {
               Ready to Start Your Journey?
             </h2>
             <p className="text-xl text-gray-400 mb-8">
-              Join thousands of successful students who trusted AJ NOVA for their German university admission
+              Join the community of successful students who trusted AJ NOVA for their German university admission
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a

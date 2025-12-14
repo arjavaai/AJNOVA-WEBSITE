@@ -7,184 +7,265 @@ import {
   EnglishTest,
   GermanLevel,
   WorkExperience,
-  SCORING_WEIGHTS,
-  SCORE_THRESHOLDS
+  QualificationLevel
 } from './eligibility-types'
 
-// Calculate academic score (40 points max)
-function calculateAcademicScore(score: number, scoreType: ScoreType): number {
-  if (scoreType === 'CGPA') {
-    if (score >= 7.0) return 40
-    if (score >= 6.0) return 30
-    if (score >= 5.0) return 20
-    return 10
-  } else {
-    // PERCENTAGE
-    if (score >= 70) return 40
-    if (score >= 60) return 30
-    if (score >= 50) return 20
-    return 10
+// Check if qualification meets German university requirements
+function checkAcademicEligibility(qualificationLevel: QualificationLevel, score: number, scoreType: ScoreType): {
+  eligible: boolean
+  needsStudienkolleg: boolean
+  status: string
+} {
+  // High school graduates typically need Studienkolleg for direct admission
+  if (qualificationLevel === 'HIGH_SCHOOL') {
+    // Check if score meets minimum requirement
+    const meetsMinimum = scoreType === 'CGPA' ? score >= 5.0 : score >= 50
+    return {
+      eligible: meetsMinimum,
+      needsStudienkolleg: true,
+      status: meetsMinimum
+        ? 'Meets general admission criteria (Studienkolleg required)'
+        : 'Does not meet minimum academic requirements'
+    }
+  }
+
+  // Diploma holders
+  if (qualificationLevel === 'DIPLOMA') {
+    const meetsMinimum = scoreType === 'CGPA' ? score >= 5.5 : score >= 55
+    return {
+      eligible: meetsMinimum,
+      needsStudienkolleg: false,
+      status: meetsMinimum
+        ? 'Meets general admission criteria'
+        : 'Does not meet minimum academic requirements'
+    }
+  }
+
+  // Bachelor's degree holders
+  if (qualificationLevel === 'BACHELORS') {
+    const meetsMinimum = scoreType === 'CGPA' ? score >= 5.0 : score >= 50
+    return {
+      eligible: meetsMinimum,
+      needsStudienkolleg: false,
+      status: meetsMinimum
+        ? 'Meets general admission criteria'
+        : 'Does not meet minimum academic requirements'
+    }
+  }
+
+  // Master's and PhD holders
+  const meetsMinimum = scoreType === 'CGPA' ? score >= 5.0 : score >= 50
+  return {
+    eligible: meetsMinimum,
+    needsStudienkolleg: false,
+    status: meetsMinimum
+      ? 'Meets general admission criteria'
+      : 'Does not meet minimum academic requirements'
   }
 }
 
-// Calculate English proficiency score (20 points max)
-function calculateEnglishScore(test: EnglishTest, score?: number): number {
-  if (test === 'NONE') return 0
-  if (test === 'PENDING') return 10
+// Check English proficiency (for English-taught programs)
+function checkEnglishProficiency(test: EnglishTest, score?: number): {
+  status: string
+  sufficient: boolean
+} {
+  if (test === 'NONE') {
+    return {
+      status: 'No English proficiency test taken',
+      sufficient: false
+    }
+  }
 
-  if (!score) return 0
+  if (test === 'PENDING') {
+    return {
+      status: 'English proficiency test pending',
+      sufficient: false
+    }
+  }
+
+  if (!score) {
+    return {
+      status: 'English proficiency score required',
+      sufficient: false
+    }
+  }
 
   if (test === 'IELTS') {
-    if (score >= 6.0) return 20
-    if (score >= 5.5) return 15
-    return 10
-  } else if (test === 'TOEFL') {
-    if (score >= 80) return 20
-    if (score >= 70) return 15
-    return 10
+    const sufficient = score >= 6.0
+    return {
+      status: sufficient
+        ? 'Sufficient for English-taught programs'
+        : 'Below typical requirement (IELTS 6.0+)',
+      sufficient
+    }
   }
 
-  return 0
-}
+  if (test === 'TOEFL') {
+    const sufficient = score >= 80
+    return {
+      status: sufficient
+        ? 'Sufficient for English-taught programs'
+        : 'Below typical requirement (TOEFL 80+)',
+      sufficient
+    }
+  }
 
-// Calculate German language score (25 points max)
-function calculateGermanScore(level: GermanLevel): number {
-  switch (level) {
-    case 'C2':
-    case 'C1':
-    case 'B2':
-    case 'B1':
-      return 25
-    case 'A2':
-      return 20
-    case 'A1':
-      return 10
-    case 'NONE':
-    default:
-      return 0
+  return {
+    status: 'English proficiency test required',
+    sufficient: false
   }
 }
 
-// Calculate work experience score (15 points max)
-function calculateWorkExperienceScore(experience: WorkExperience): number {
-  switch (experience) {
-    case 'THREE_PLUS':
-      return 15
-    case 'ONE_TO_THREE':
-      return 10
-    case 'LESS_THAN_1':
-      return 5
-    case 'NONE':
-    default:
-      return 0
+// Check German proficiency (for German-taught programs)
+function checkGermanProficiency(level: GermanLevel): {
+  status: string
+  forGermanPrograms: boolean
+} {
+  if (level === 'NONE') {
+    return {
+      status: 'Not required for English-taught programs',
+      forGermanPrograms: false
+    }
+  }
+
+  const sufficientForGerman = ['B2', 'C1', 'C2'].includes(level)
+
+  return {
+    status: sufficientForGerman
+      ? 'Sufficient for German-taught programs'
+      : 'Only required for German-taught programs (B2+ needed)',
+    forGermanPrograms: sufficientForGerman
   }
 }
 
-// Determine eligibility level
-function determineEligibilityLevel(totalScore: number): EligibilityLevel {
-  if (totalScore >= SCORE_THRESHOLDS.PUBLIC_ELIGIBLE) {
+// Determine overall eligibility level
+function determineEligibilityLevel(
+  academicEligible: boolean,
+  needsStudienkolleg: boolean,
+  englishSufficient: boolean
+): EligibilityLevel {
+  if (academicEligible && !needsStudienkolleg && englishSufficient) {
     return 'PUBLIC_ELIGIBLE'
-  } else if (totalScore >= SCORE_THRESHOLDS.PRIVATE_ELIGIBLE) {
+  } else if (academicEligible) {
     return 'PRIVATE_ELIGIBLE'
   }
   return 'NEEDS_IMPROVEMENT'
 }
 
 // Get message based on eligibility level
-function getEligibilityMessage(level: EligibilityLevel): string {
+function getEligibilityMessage(level: EligibilityLevel, needsStudienkolleg: boolean): string {
   switch (level) {
     case 'PUBLIC_ELIGIBLE':
-      return "Congratulations! Based on your academic background and language proficiency, you're eligible for public universities in Germany. Your strong profile positions you well for competitive programs."
+      if (needsStudienkolleg) {
+        return "Your academic qualifications meet the general requirements for German public universities. You will need to complete Studienkolleg (preparatory course) before direct admission to a degree program."
+      }
+      return "Based on your academic qualifications and language proficiency, you meet the general eligibility criteria for public universities in Germany."
     case 'PRIVATE_ELIGIBLE':
-      return "Good news! You're eligible for private universities in Germany. While public universities may be competitive, private institutions offer excellent programs and may be a great fit for your goals."
+      return "Your academic background meets general requirements. Additional steps may be needed such as improving language proficiency or completing Studienkolleg for certain programs."
     case 'NEEDS_IMPROVEMENT':
-      return "Don't worry — every journey starts with a single step. Your current profile shows potential, and with some improvements, you can achieve your study abroad goals."
+      return "Your current profile does not meet the minimum requirements for German universities. Please consult with our counsellors to explore pathways to strengthen your application."
   }
 }
 
-// Get recommendations based on scores and eligibility
+// Get recommendations based on eligibility assessment
 function getRecommendations(
   level: EligibilityLevel,
-  breakdown: ScoreBreakdown,
+  academicStatus: string,
+  englishStatus: string,
+  germanStatus: string,
+  needsStudienkolleg: boolean,
   formData: EligibilityFormData
 ): string[] {
   const recommendations: string[] = []
 
-  // Academic recommendations
-  if (breakdown.academicScore < 30) {
-    recommendations.push('Focus on improving your academic performance or consider post-graduation courses')
+  // Studienkolleg recommendation
+  if (needsStudienkolleg) {
+    recommendations.push('Complete Studienkolleg (preparatory course) for direct university admission')
   }
 
   // English recommendations
   if (formData.englishTest === 'NONE') {
-    recommendations.push('Take an English proficiency test (IELTS 6.0+ or TOEFL 80+)')
-  } else if (breakdown.englishScore < 15) {
-    recommendations.push('Improve your English test score to meet university requirements')
+    recommendations.push('Take an English proficiency test (IELTS 6.0+ or TOEFL 80+) for English-taught programs')
+  } else if (formData.englishScore && formData.englishTest === 'IELTS' && formData.englishScore < 6.0) {
+    recommendations.push('Improve English score to meet university requirements (IELTS 6.0+)')
+  } else if (formData.englishScore && formData.englishTest === 'TOEFL' && formData.englishScore < 80) {
+    recommendations.push('Improve English score to meet university requirements (TOEFL 80+)')
   }
 
-  // German recommendations
-  if (breakdown.germanScore === 0) {
-    recommendations.push('Start German language courses (aim for at least A2 level)')
-  } else if (breakdown.germanScore < 20) {
-    recommendations.push('Continue German language learning to reach B1 or higher for better opportunities')
-  }
-
-  // Work experience recommendations
-  if (breakdown.workExperienceScore < 10 && level !== 'PUBLIC_ELIGIBLE') {
-    recommendations.push('Gain relevant work experience to strengthen your profile')
+  // German recommendations (only for German-taught programs)
+  if (formData.germanLevel === 'NONE') {
+    recommendations.push('German language not required for English-taught programs')
+  } else if (!['B2', 'C1', 'C2'].includes(formData.germanLevel)) {
+    recommendations.push('For German-taught programs, achieve B2 level or higher')
   }
 
   // General recommendations
   if (level === 'NEEDS_IMPROVEMENT') {
     recommendations.push('Book a consultation with our counsellors for a personalized improvement plan')
+  } else {
+    recommendations.push('Proceed with APS verification and document preparation')
   }
 
   return recommendations
 }
 
 // Get next steps based on eligibility level
-function getNextSteps(level: EligibilityLevel): string[] {
+function getNextSteps(level: EligibilityLevel, needsStudienkolleg: boolean): string[] {
   switch (level) {
     case 'PUBLIC_ELIGIBLE':
+      if (needsStudienkolleg) {
+        return [
+          'Research Studienkolleg programs and requirements',
+          'Submit APS verification documents',
+          'Prepare application for Studienkolleg',
+          'Book consultation for detailed guidance'
+        ]
+      }
       return [
-        'Complete your profile information',
-        'Submit APS verification documents',
-        'Generate admission documents (SOP, LOR, CV)',
-        'Start university applications'
+        'Complete APS verification process',
+        'Prepare admission documents (SOP, LOR, CV)',
+        'Research and shortlist universities',
+        'Begin university applications'
       ]
     case 'PRIVATE_ELIGIBLE':
       return [
-        'Explore private university options',
-        'Consider improving language scores',
+        'Complete missing requirements (language tests, etc.)',
         'Book consultation for personalized guidance',
-        'Research scholarship opportunities'
+        'Explore suitable university programs',
+        'Prepare required documents'
       ]
     case 'NEEDS_IMPROVEMENT':
       return [
-        'Take English proficiency test if not done',
-        'Enroll in German language courses',
-        'Book a free consultation for guidance',
-        'Create a profile improvement timeline'
+        'Book a free consultation to assess your options',
+        'Understand specific gaps in your profile',
+        'Create an improvement action plan',
+        'Consider alternative pathways to German education'
       ]
   }
 }
 
 // Get badge information
-function getBadgeInfo(level: EligibilityLevel): { label: string; color: string } {
+function getBadgeInfo(level: EligibilityLevel, needsStudienkolleg: boolean): { label: string; color: string } {
   switch (level) {
     case 'PUBLIC_ELIGIBLE':
+      if (needsStudienkolleg) {
+        return {
+          label: 'Additional Steps Required',
+          color: 'amber'
+        }
+      }
       return {
         label: 'Eligible for Public Universities',
         color: 'green'
       }
     case 'PRIVATE_ELIGIBLE':
       return {
-        label: 'Eligible for Private Universities',
+        label: 'Additional Steps Required',
         color: 'amber'
       }
     case 'NEEDS_IMPROVEMENT':
       return {
-        label: 'Profile Needs Improvement',
+        label: 'Does Not Meet Requirements',
         color: 'red'
       }
   }
@@ -192,41 +273,67 @@ function getBadgeInfo(level: EligibilityLevel): { label: string; color: string }
 
 // Main calculation function
 export function calculateEligibility(formData: EligibilityFormData): EligibilityResult {
-  // Calculate individual scores
-  const academicScore = calculateAcademicScore(formData.score, formData.scoreType)
-  const englishScore = calculateEnglishScore(formData.englishTest, formData.englishScore)
-  const germanScore = calculateGermanScore(formData.germanLevel)
-  const workExperienceScore = calculateWorkExperienceScore(formData.workExperience)
+  // Check academic eligibility
+  const academicCheck = checkAcademicEligibility(
+    formData.qualificationLevel,
+    formData.score,
+    formData.scoreType
+  )
 
-  // Calculate total
-  const totalScore = academicScore + englishScore + germanScore + workExperienceScore
+  // Check language proficiency
+  const englishCheck = checkEnglishProficiency(formData.englishTest, formData.englishScore)
+  const germanCheck = checkGermanProficiency(formData.germanLevel)
 
-  // Create score breakdown
+  // Determine overall eligibility level
+  const level = determineEligibilityLevel(
+    academicCheck.eligible,
+    academicCheck.needsStudienkolleg,
+    englishCheck.sufficient
+  )
+
+  // Calculate profile strength indicator (qualitative, not for scoring)
+  let profileStrength = 0
+  if (academicCheck.eligible) profileStrength += 50
+  if (englishCheck.sufficient) profileStrength += 30
+  if (germanCheck.forGermanPrograms) profileStrength += 20
+
+  // Create qualitative breakdown (not numerical scores)
   const breakdown: ScoreBreakdown = {
-    academicScore,
-    academicMax: SCORING_WEIGHTS.ACADEMIC,
-    englishScore,
-    englishMax: SCORING_WEIGHTS.ENGLISH,
-    germanScore,
-    germanMax: SCORING_WEIGHTS.GERMAN,
-    workExperienceScore,
-    workExperienceMax: SCORING_WEIGHTS.WORK_EXPERIENCE,
-    totalScore,
+    academicScore: academicCheck.eligible ? 1 : 0,
+    academicMax: 1,
+    englishScore: englishCheck.sufficient ? 1 : 0,
+    englishMax: 1,
+    germanScore: germanCheck.forGermanPrograms ? 1 : 0,
+    germanMax: 1,
+    workExperienceScore: 0, // Not used for eligibility
+    workExperienceMax: 0,
+    totalScore: profileStrength,
     totalMax: 100
   }
-
-  // Determine eligibility level
-  const level = determineEligibilityLevel(totalScore)
 
   // Build result
   const result: EligibilityResult = {
     level,
-    readinessScore: totalScore,
+    readinessScore: profileStrength,
     breakdown,
-    badge: getBadgeInfo(level),
-    message: getEligibilityMessage(level),
-    recommendations: getRecommendations(level, breakdown, formData),
-    nextSteps: getNextSteps(level)
+    badge: getBadgeInfo(level, academicCheck.needsStudienkolleg),
+    message: getEligibilityMessage(level, academicCheck.needsStudienkolleg),
+    recommendations: getRecommendations(
+      level,
+      academicCheck.status,
+      englishCheck.status,
+      germanCheck.status,
+      academicCheck.needsStudienkolleg,
+      formData
+    ),
+    nextSteps: getNextSteps(level, academicCheck.needsStudienkolleg),
+    // Add assessment details for display
+    assessmentDetails: {
+      academic: academicCheck.status,
+      english: englishCheck.status,
+      german: germanCheck.status,
+      needsStudienkolleg: academicCheck.needsStudienkolleg
+    }
   }
 
   return result
