@@ -67,9 +67,10 @@ async def get_current_user(
         print(f"Token validation error: {type(e).__name__}: {e}")
         raise credentials_exception
 
-    # Get user from database
+    # Get user from database using admin client to bypass RLS
     print(f"Fetching user from database with ID: {user_id}")
-    response = supabase.table("users").select("*").eq("id", user_id).execute()
+    supabase_admin = get_supabase_admin()
+    response = supabase_admin.table("users").select("*").eq("id", user_id).execute()
 
     print(f"Database response: {response.data}")
 
@@ -77,27 +78,53 @@ async def get_current_user(
         print("No user found in database, creating new user...")
         # User exists in Supabase Auth but not in our users table
         # Get user info from Supabase Auth using admin client
-        supabase_admin = get_supabase_admin()
         auth_user = supabase_admin.auth.admin.get_user_by_id(user_id)
 
         if not auth_user or not auth_user.user:
             print("User not found in Supabase Auth either!")
             raise credentials_exception
 
-        # Create user record
+        # Create user record using admin client to bypass RLS
+        # Get google_id from the auth user if available
+        google_id = None
+        if hasattr(auth_user.user, 'identities') and auth_user.user.identities:
+            for identity in auth_user.user.identities:
+                # Check if identity is a dict or object
+                if isinstance(identity, dict):
+                    if identity.get('provider') == 'google':
+                        google_id = identity.get('provider_id')
+                else:
+                    # It's a Pydantic model, access attributes directly
+                    if hasattr(identity, 'provider') and identity.provider == 'google':
+                        google_id = getattr(identity, 'provider_id', None) or getattr(identity, 'id', None)
+
         new_user = {
             "id": user_id,
             "email": auth_user.user.email,
             "name": auth_user.user.user_metadata.get("full_name") or auth_user.user.user_metadata.get("name"),
-            "profile_picture_url": auth_user.user.user_metadata.get("avatar_url") or auth_user.user.user_metadata.get("picture"),
             "role": "student",  # Default role
             "auth_provider": "google",
+            "google_id": google_id,
             "status": "active"
         }
 
-        created = supabase.table("users").insert(new_user).execute()
-        user_data = created.data[0]
-        print(f"User created: {user_data.get('email')}")
+        try:
+            created = supabase_admin.table("users").insert(new_user).execute()
+            user_data = created.data[0]
+            print(f"User created: {user_data.get('email')}")
+        except Exception as e:
+            if "duplicate key" in str(e).lower():
+                # User was created by another request, try to fetch again
+                print("User already exists, fetching again...")
+                response = supabase_admin.table("users").select("*").eq("id", user_id).execute()
+                if response.data:
+                    user_data = response.data[0]
+                    print(f"User data found on retry: {user_data.get('email', 'NO EMAIL')}")
+                else:
+                    print("Still no user found after retry!")
+                    raise credentials_exception
+            else:
+                raise e
     else:
         user_data = response.data[0]
         print(f"User data found: {user_data.get('email', 'NO EMAIL')}")
@@ -133,6 +160,8 @@ class RoleChecker:
 require_student = RoleChecker(["student"])
 require_counsellor = RoleChecker(["counsellor", "admin"])
 require_admin = RoleChecker(["admin"])
+
+
 
 
 

@@ -26,9 +26,9 @@ export function Navbar() {
             <div className="relative px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
               {/* Logo */}
               <Link href="/" className="flex items-center gap-3">
-                <img 
-                  src="/websitelogo.png" 
-                  alt="AJ NOVA Logo" 
+                <img
+                  src="/websitelogo.png"
+                  alt="AJ NOVA Logo"
                   className="h-12 md:h-14 w-auto object-contain"
                 />
               </Link>
@@ -45,7 +45,7 @@ export function Navbar() {
                   Services
                 </a>
                 <Link href="/eligibility-checker" className="hover:text-coral transition-colors duration-200">
-                  Eligibility Checker
+                  Preliminary Profile Assessment
                 </Link>
                 <Link href="/ects-calculator" className="hover:text-coral transition-colors duration-200">
                   ECTS Calculator
@@ -114,7 +114,7 @@ export function Navbar() {
                   className="text-base font-medium text-foreground hover:text-coral transition-colors py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Eligibility Checker
+                  Preliminary Profile Assessment
                 </Link>
                 <Link
                   href="/ects-calculator"

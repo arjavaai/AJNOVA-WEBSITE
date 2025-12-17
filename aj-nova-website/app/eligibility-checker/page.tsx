@@ -191,13 +191,13 @@ export default function EligibilityCheckerPage() {
         };
       case "NEEDS_IMPROVEMENT":
         return {
-          icon: XCircle,
-          bgColor: "bg-red-500/10",
-          borderColor: "border-red-500/30",
-          textColor: "text-red-500",
-          barColor: "bg-red-500",
-          emoji: "❌",
-          headline: "Does Not Meet Requirements",
+          icon: AlertTriangle,
+          bgColor: "bg-amber-500/10",
+          borderColor: "border-amber-500/30",
+          textColor: "text-amber-500",
+          barColor: "bg-amber-500",
+          emoji: "💡",
+          headline: "Profile Needs Strengthening",
         };
     }
   };
@@ -217,7 +217,7 @@ export default function EligibilityCheckerPage() {
             Quick Assessment
           </div>
           <h1 className="text-4xl md:text-5xl font-display font-bold mb-6 text-foreground">
-            Check Your Eligibility for{" "}
+            Preliminary Profile Assessment for{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-coral to-navy">
               German Universities
             </span>
@@ -227,7 +227,7 @@ export default function EligibilityCheckerPage() {
           </p>
           <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
-            This is a preliminary tool; final decisions depend on APS verification and individual university criteria.
+            This is a preliminary assessment. Final eligibility depends on APS verification, uni-assist evaluation, and individual university requirements.
           </p>
         </div>
       </section>
@@ -492,7 +492,7 @@ export default function EligibilityCheckerPage() {
                 ) : (
                   <>
                     <GraduationCap className="w-5 h-5" />
-                    Check My Eligibility
+                    Assess My Profile
                   </>
                 )}
               </button>
@@ -546,7 +546,7 @@ export default function EligibilityCheckerPage() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-3">
-                  This is a preliminary indicator based on your qualifications and language proficiency. Final eligibility depends on APS verification and individual university criteria.
+                  This is a preliminary assessment. Final eligibility depends on APS verification, uni-assist evaluation, and individual university requirements.
                 </p>
               </FlashlightCard>
 
@@ -604,7 +604,7 @@ export default function EligibilityCheckerPage() {
                 </div>
                 <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
                   <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                    ⚠️ Disclaimer: This assessment is preliminary. Final eligibility depends on university review and document verification.
+                    ⚠️ Disclaimer: This is a preliminary assessment. Final eligibility depends on APS verification, uni-assist evaluation, and individual university requirements.
                   </p>
                 </div>
               </FlashlightCard>
@@ -663,6 +663,10 @@ export default function EligibilityCheckerPage() {
     </div>
   );
 }
+
+
+
+
 
 
 

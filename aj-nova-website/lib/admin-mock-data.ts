@@ -91,7 +91,7 @@ export const mockLeads: Lead[] = [
     name: 'Vikram Singh',
     email: 'vikram.singh@example.com',
     phone: '+91 9876543215',
-    source: 'Eligibility Checker',
+    source: 'Preliminary Profile Assessment',
     status: 'QUALIFIED',
     assignedTo: 'John Anderson',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),

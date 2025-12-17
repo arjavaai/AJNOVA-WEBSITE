@@ -22,7 +22,7 @@ const serviceCategories = [
     icon: Users,
     services: [
       "Free initial consultation",
-      "Eligibility assessment",
+      "Preliminary profile assessment",
       "Course and university selection guidance",
       "Application strategy planning",
       "One-on-one counselling sessions"
@@ -241,7 +241,7 @@ export default function ServicesPage() {
                 href="/dashboard/eligibility"
                 className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors inline-flex items-center justify-center gap-2"
               >
-                Check Eligibility
+                Start Assessment
                 <ArrowRight className="w-5 h-5" />
               </a>
               <a

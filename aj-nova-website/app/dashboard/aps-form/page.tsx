@@ -44,9 +44,20 @@ export default function APSFormPage() {
   async function fetchForm() {
     try {
       const { aps: apsAPI } = await import('@/lib/api-client')
-      const data = await apsAPI.get()
+      let data
 
-      // Initialize form with default structure if data is incomplete
+      try {
+        data = await apsAPI.get()
+      } catch (err: any) {
+        // If 404, create empty form
+        if (err.response?.status === 404 || err.message?.includes('404')) {
+          data = { form: null }
+        } else {
+          throw err
+        }
+      }
+
+      // Initialize form with default structure if data is incomplete or doesn't exist
       const initializedForm: APSForm = {
         id: data.form?.id || '',
         studentId: data.form?.studentId || data.form?.student_id || '',
@@ -368,22 +379,22 @@ export default function APSFormPage() {
                     <Label>Year of Completion *</Label>
                     <Input
                       type="number"
-                      value={form.secondaryEducation.grade10Year}
-                      onChange={(e) => updateForm({ 
-                        secondaryEducation: { ...form.secondaryEducation, grade10Year: parseInt(e.target.value) }
+                      value={form.secondaryEducation.grade10Year || ''}
+                      onChange={(e) => updateForm({
+                        secondaryEducation: { ...form.secondaryEducation, grade10Year: parseInt(e.target.value) || 0 }
                       })}
                       disabled={isSubmitted}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label>Marks / Percentage *</Label>
                     <Input
                       type="number"
                       step="0.01"
-                      value={form.secondaryEducation.grade10Marks}
-                      onChange={(e) => updateForm({ 
-                        secondaryEducation: { ...form.secondaryEducation, grade10Marks: parseFloat(e.target.value) }
+                      value={form.secondaryEducation.grade10Marks || ''}
+                      onChange={(e) => updateForm({
+                        secondaryEducation: { ...form.secondaryEducation, grade10Marks: parseFloat(e.target.value) || 0 }
                       })}
                       disabled={isSubmitted}
                     />
@@ -420,22 +431,22 @@ export default function APSFormPage() {
                     <Label>Year of Completion *</Label>
                     <Input
                       type="number"
-                      value={form.secondaryEducation.grade12Year}
-                      onChange={(e) => updateForm({ 
-                        secondaryEducation: { ...form.secondaryEducation, grade12Year: parseInt(e.target.value) }
+                      value={form.secondaryEducation.grade12Year || ''}
+                      onChange={(e) => updateForm({
+                        secondaryEducation: { ...form.secondaryEducation, grade12Year: parseInt(e.target.value) || 0 }
                       })}
                       disabled={isSubmitted}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label>Marks / Percentage *</Label>
                     <Input
                       type="number"
                       step="0.01"
-                      value={form.secondaryEducation.grade12Marks}
-                      onChange={(e) => updateForm({ 
-                        secondaryEducation: { ...form.secondaryEducation, grade12Marks: parseFloat(e.target.value) }
+                      value={form.secondaryEducation.grade12Marks || ''}
+                      onChange={(e) => updateForm({
+                        secondaryEducation: { ...form.secondaryEducation, grade12Marks: parseFloat(e.target.value) || 0 }
                       })}
                       disabled={isSubmitted}
                     />
@@ -506,9 +517,9 @@ export default function APSFormPage() {
                 <Input
                   type="number"
                   step="0.01"
-                  value={form.higherEducation.finalGrade}
-                  onChange={(e) => updateForm({ 
-                    higherEducation: { ...form.higherEducation, finalGrade: parseFloat(e.target.value) }
+                  value={form.higherEducation.finalGrade || ''}
+                  onChange={(e) => updateForm({
+                    higherEducation: { ...form.higherEducation, finalGrade: parseFloat(e.target.value) || 0 }
                   })}
                   disabled={isSubmitted}
                 />

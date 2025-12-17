@@ -36,7 +36,17 @@ Write-Host "Press CTRL+C to stop the server" -ForegroundColor Gray
 Write-Host ""
 
 # Start the server
-python -m uvicorn app.main:app --reload --port 8000
+if (Test-Path "venv\Scripts\python.exe") {
+    Write-Host "Using Python from virtual environment" -ForegroundColor Green
+    .\venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
+} else {
+    Write-Host "Virtual environment not found, using system Python" -ForegroundColor Yellow
+    python -m uvicorn app.main:app --reload --port 8000
+}
+
+
+
+
 
 
 

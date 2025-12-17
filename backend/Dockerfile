@@ -1,5 +1,6 @@
 # AJ NOVA Backend - Production Dockerfile
-FROM python:3.11-slim
+# Updated to Python 3.13 (December 2025)
+FROM python:3.13-slim
 
 # Set working directory
 WORKDIR /app
@@ -46,6 +47,10 @@ CMD gunicorn app.main:app \
     --access-logfile - \
     --error-logfile - \
     --log-level info
+
+
+
+
 
 
 

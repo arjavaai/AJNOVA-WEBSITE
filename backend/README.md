@@ -18,14 +18,37 @@ FastAPI backend for the AJ NOVA German University Admissions Platform.
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Prerequisites
+
+- **Python 3.13+** (or Python 3.10+)
+- pip (Python package manager)
+- Virtual environment (recommended)
+
+### 1. Set Up Virtual Environment (Recommended)
 
 ```bash
 cd backend
+
+# Create virtual environment with Python 3.13
+python -m venv venv
+
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# Linux/Mac:
+source venv/bin/activate
+
+# Upgrade pip
+pip install --upgrade pip
+```
+
+### 2. Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+### 3. Configure Environment
 
 Copy `.env.example` to `.env` and fill in your credentials:
 
@@ -39,20 +62,32 @@ Required environment variables:
 - `GEMINI_API_KEY` - From Google AI Studio
 - `SECRET_KEY` - Generate a strong random key
 
-### 3. Run Development Server
+### 4. Run Development Server
 
+**Option 1: Using the Startup Script (Recommended for Windows)**
 ```bash
-# Using uvicorn directly
-uvicorn app.main:app --reload --port 8000
+# From project root
+START_BACKEND.bat
+```
 
-# Or using Python
-python -m app.main
+**Option 2: Using uvicorn directly**
+```bash
+# Make sure virtual environment is activated
+cd backend
+python -m uvicorn app.main_working:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Option 3: Using PowerShell script**
+```powershell
+cd backend
+.\start_server.ps1
 ```
 
 The API will be available at:
-- API: http://localhost:8000
-- Docs: http://localhost:8000/api/docs
-- ReDoc: http://localhost:8000/api/redoc
+- **API**: http://localhost:8000
+- **Interactive Docs (Swagger)**: http://localhost:8000/api/docs
+- **ReDoc**: http://localhost:8000/api/redoc
+- **Health Check**: http://localhost:8000/health
 
 ## Project Structure
 
@@ -165,18 +200,38 @@ Use the interactive docs at http://localhost:8000/api/docs
 ### Common Commands
 
 ```bash
-# Install dependencies
+# Activate virtual environment (if not activated)
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
+
+# Install/Update dependencies
 pip install -r requirements.txt
 
-# Run server
-python -m app.main
-
-# Or with uvicorn
-uvicorn app.main:app --reload
+# Run server (development)
+python -m uvicorn app.main_working:app --reload --host 0.0.0.0 --port 8000
 
 # Check Python version
-python --version  # Should be 3.11+
+python --version  # Should be Python 3.13.11
+
+# Check installed packages
+pip list
+
+# Update pip
+pip install --upgrade pip
+
+# Deactivate virtual environment
+deactivate
 ```
+
+### Python Version Information
+
+This project uses **Python 3.13.11** with a virtual environment. Key points:
+- ✅ Upgraded from Python 3.9 (December 2025)
+- ✅ Full compatibility with Pydantic 2.12.5 and FastAPI
+- ✅ Latest features and performance improvements
+- ✅ Isolated dependencies via virtual environment
+
+If you encounter issues, see: `PYTHON_313_UPGRADE_SUCCESS.md` in project root.
 
 ## Production Deployment
 
@@ -188,13 +243,27 @@ gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 
 ### Docker Deployment
 
+The project includes a production-ready Dockerfile using Python 3.13:
+
 ```dockerfile
-FROM python:3.11-slim
+FROM python:3.13-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY ./app ./app
 CMD ["gunicorn", "app.main:app", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+```
+
+Build and run with Docker:
+```bash
+# Build image
+docker build -t ajnova-backend .
+
+# Run container
+docker run -p 8000:8000 --env-file .env ajnova-backend
+
+# Or use docker-compose
+docker-compose up -d
 ```
 
 ### Environment Variables
@@ -218,6 +287,10 @@ Ensure all production environment variables are set:
 ## Support
 
 For issues or questions, contact the development team.
+
+
+
+
 
 
 

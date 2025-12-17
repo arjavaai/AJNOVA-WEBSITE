@@ -37,72 +37,83 @@ async def health():
 try:
     from app.api.v1 import auth
     app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
-    print("✓ Auth router loaded")
+    print("[OK] Auth router loaded")
 except Exception as e:
-    print(f"✗ Auth router failed: {e}")
+    print(f"[ERROR] Auth router failed: {e}")
 
 try:
     from app.api.v1 import users
     app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
-    print("✓ Users router loaded")
+    print("[OK] Users router loaded")
 except Exception as e:
-    print(f"✗ Users router failed: {e}")
+    print(f"[ERROR] Users router failed: {e}")
 
 try:
     from app.api.v1 import profiles
     app.include_router(profiles.router, prefix="/api/v1/profiles", tags=["Profiles"])
-    print("✓ Profiles router loaded")
+    print("[OK] Profiles router loaded")
 except Exception as e:
-    print(f"✗ Profiles router failed: {e}")
+    print(f"[ERROR] Profiles router failed: {e}")
 
 try:
     from app.api.v1 import documents
     app.include_router(documents.router, prefix="/api/v1/documents", tags=["Documents"])
-    print("✓ Documents router loaded")
+    print("[OK] Documents router loaded")
 except Exception as e:
-    print(f"✗ Documents router failed: {e}")
+    print(f"[ERROR] Documents router failed: {e}")
 
 try:
     from app.api.v1 import eligibility
     app.include_router(eligibility.router, prefix="/api/v1/eligibility", tags=["Eligibility"])
-    print("✓ Eligibility router loaded")
+    print("[OK] Eligibility router loaded")
 except Exception as e:
-    print(f"✗ Eligibility router failed: {e}")
+    print(f"[ERROR] Eligibility router failed: {e}")
 
 try:
     from app.api.v1 import aps
     app.include_router(aps.router, prefix="/api/v1/aps", tags=["APS"])
-    print("✓ APS router loaded")
+    print("[OK] APS router loaded")
 except Exception as e:
-    print(f"✗ APS router failed: {e}")
+    print(f"[ERROR] APS router failed: {e}")
 
 try:
     from app.api.v1 import applications
     app.include_router(applications.router, prefix="/api/v1/applications", tags=["Applications"])
-    print("✓ Applications router loaded")
+    print("[OK] Applications router loaded")
 except Exception as e:
-    print(f"✗ Applications router failed: {e}")
+    print(f"[ERROR] Applications router failed: {e}")
 
 try:
     from app.api.v1 import messages
     app.include_router(messages.router, prefix="/api/v1/messages", tags=["Messages"])
-    print("✓ Messages router loaded")
+    print("[OK] Messages router loaded")
 except Exception as e:
-    print(f"✗ Messages router failed: {e}")
+    print(f"[ERROR] Messages router failed: {e}")
 
 try:
     from app.api.v1 import consultations
     app.include_router(consultations.router, prefix="/api/v1/consultations", tags=["Consultations"])
-    print("✓ Consultations router loaded")
+    print("[OK] Consultations router loaded")
 except Exception as e:
-    print(f"✗ Consultations router failed: {e}")
+    print(f"[ERROR] Consultations router failed: {e}")
 
 try:
     from app.api.v1 import admin
     app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
-    print("✓ Admin router loaded")
+    print("[OK] Admin router loaded")
 except Exception as e:
-    print(f"✗ Admin router failed: {e}")
+    print(f"[ERROR] Admin router failed: {e}")
+
+try:
+    from app.api.v1 import notifications
+    app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["Notifications"])
+    print("[OK] Notifications router loaded")
+except Exception as e:
+    print(f"[ERROR] Notifications router failed: {e}")
+
+
+
+
 
 
 

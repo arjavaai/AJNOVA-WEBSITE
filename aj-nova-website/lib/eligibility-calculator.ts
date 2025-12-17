@@ -91,11 +91,11 @@ function checkEnglishProficiency(test: EnglishTest, score?: number): {
   }
 
   if (test === 'IELTS') {
-    const sufficient = score >= 6.0
+    const sufficient = score >= 6.5
     return {
       status: sufficient
         ? 'Sufficient for English-taught programs'
-        : 'Below typical requirement (IELTS 6.0+)',
+        : 'Below typical requirement (IELTS 6.5+ recommended)',
       sufficient
     }
   }
@@ -163,7 +163,7 @@ function getEligibilityMessage(level: EligibilityLevel, needsStudienkolleg: bool
     case 'PRIVATE_ELIGIBLE':
       return "Your academic background meets general requirements. Additional steps may be needed such as improving language proficiency or completing Studienkolleg for certain programs."
     case 'NEEDS_IMPROVEMENT':
-      return "Your current profile does not meet the minimum requirements for German universities. Please consult with our counsellors to explore pathways to strengthen your application."
+      return "Your profile would benefit from strengthening in certain areas. Our counsellors can help you explore pathways to improve your qualifications and meet university requirements."
   }
 }
 
@@ -185,9 +185,9 @@ function getRecommendations(
 
   // English recommendations
   if (formData.englishTest === 'NONE') {
-    recommendations.push('Take an English proficiency test (IELTS 6.0+ or TOEFL 80+) for English-taught programs')
-  } else if (formData.englishScore && formData.englishTest === 'IELTS' && formData.englishScore < 6.0) {
-    recommendations.push('Improve English score to meet university requirements (IELTS 6.0+)')
+    recommendations.push('Take an English proficiency test (IELTS 6.5+ or TOEFL 80+ recommended) for English-taught programs')
+  } else if (formData.englishScore && formData.englishTest === 'IELTS' && formData.englishScore < 6.5) {
+    recommendations.push('IELTS 6.5+ overall is recommended for most English-taught public university programs')
   } else if (formData.englishScore && formData.englishTest === 'TOEFL' && formData.englishScore < 80) {
     recommendations.push('Improve English score to meet university requirements (TOEFL 80+)')
   }
@@ -265,8 +265,8 @@ function getBadgeInfo(level: EligibilityLevel, needsStudienkolleg: boolean): { l
       }
     case 'NEEDS_IMPROVEMENT':
       return {
-        label: 'Does Not Meet Requirements',
-        color: 'red'
+        label: 'Profile Needs Strengthening',
+        color: 'amber'
       }
   }
 }

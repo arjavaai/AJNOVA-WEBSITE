@@ -45,7 +45,7 @@ export function Footer() {
           <ul className="space-y-2">
             <li>
               <a href="/eligibility-checker" className="text-muted-foreground hover:text-coral transition">
-                Eligibility Checker
+                Preliminary Profile Assessment
               </a>
             </li>
             <li>

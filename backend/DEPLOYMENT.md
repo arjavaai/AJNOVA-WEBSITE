@@ -1,16 +1,19 @@
 # AJ NOVA Backend - Deployment Guide
 
+**Updated for Python 3.13.11 (December 2025)**
+
 ## 🚀 Deployment Options
 
 ### Option 1: Docker Deployment (Recommended)
 
 #### Prerequisites
 - Docker & Docker Compose installed
+- Python 3.13+ (for local development)
 - Environment variables configured
 
 #### Steps
 
-1. **Build the Docker image:**
+1. **Build the Docker image (Python 3.13):**
    ```bash
    docker build -t ajnova-backend .
    ```
@@ -68,7 +71,8 @@
 3. **Configure:**
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT`
-   - **Environment:** Python 3.11
+   - **Environment:** Python 3.13 (or latest Python 3.x available)
+   - **Python Version:** 3.13.11 (specify in Render settings)
 4. **Add environment variables** from `.env.example`
 5. **Deploy!**
 
@@ -220,9 +224,11 @@ jobs:
 
 ### Server won't start
 - Check environment variables are set correctly
-- Verify Python version (3.11+ required)
+- Verify Python version (3.13+ recommended, 3.10+ minimum)
 - Check port 8000 is available
 - Review error logs
+- Ensure virtual environment is activated (local development)
+- Check if all dependencies are installed
 
 ### Database connection issues
 - Verify Supabase credentials
@@ -237,6 +243,10 @@ jobs:
 ## 📞 Support
 
 For deployment issues, contact the development team or check the documentation.
+
+
+
+
 
 
 

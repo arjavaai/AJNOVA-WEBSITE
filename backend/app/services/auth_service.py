@@ -69,7 +69,7 @@ class AuthService:
             update_data = {
                 "last_login": datetime.utcnow().isoformat(),
                 "name": google_user.get("name"),
-                "profile_picture_url": google_user.get("picture"),
+                "profile_photo_url": google_user.get("picture"),
             }
             
             updated = self.supabase.table("users").update(update_data).eq("id", user_data["id"]).execute()
@@ -80,7 +80,7 @@ class AuthService:
                 "email": google_user["email"],
                 "name": google_user.get("name"),
                 "google_id": google_id,
-                "profile_picture_url": google_user.get("picture"),
+                "profile_photo_url": google_user.get("picture"),
                 "role": "student",  # Default role
                 "auth_provider": "google",
                 "status": "active"
@@ -124,6 +124,8 @@ class AuthService:
         
         query_string = "&".join([f"{k}={v}" for k, v in params.items()])
         return f"{base_url}?{query_string}"
+
+
 
 
 

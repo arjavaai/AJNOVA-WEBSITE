@@ -262,6 +262,36 @@ export const consultations = {
 };
 
 // =======================
+// Notification APIs
+// =======================
+
+export const notifications = {
+  list: async (params?: { limit?: number; offset?: number; type?: string; is_read?: boolean }) => {
+    const response = await apiClient.get('/api/v1/notifications', { params });
+    return response.data;
+  },
+
+  getUnreadCount: async () => {
+    const response = await apiClient.get('/api/v1/notifications/unread');
+    return response.data;
+  },
+
+  markAsRead: async (id: string) => {
+    const response = await apiClient.put(`/api/v1/notifications/${id}/read`);
+    return response.data;
+  },
+
+  markAllAsRead: async () => {
+    const response = await apiClient.put('/api/v1/notifications/read-all');
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    await apiClient.delete(`/api/v1/notifications/${id}`);
+  },
+};
+
+// =======================
 // Admin APIs
 // =======================
 
@@ -302,6 +332,10 @@ export const admin = {
 
 // Export the axios instance for custom requests
 export default apiClient;
+
+
+
+
 
 
 

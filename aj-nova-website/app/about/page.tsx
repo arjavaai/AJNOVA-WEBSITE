@@ -153,7 +153,7 @@ export default function AboutPage() {
               },
               {
                 title: "End-to-End Support",
-                description: "From eligibility checking to post-arrival services, we're with you every step of the way."
+                description: "From profile assessment to post-arrival services, we're with you every step of the way."
               },
               {
                 title: "Transparent Process",
@@ -195,7 +195,7 @@ export default function AboutPage() {
                 href="/dashboard/eligibility"
                 className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors"
               >
-                Check Eligibility
+                Start Assessment
               </a>
               <a
                 href="/contact"

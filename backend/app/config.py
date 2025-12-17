@@ -26,17 +26,19 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # CORS - Parse from comma-separated string for production
-    CORS_ORIGINS: str = ""
+    CORS_ORIGINS_STR: str = ""
 
     @property
     def CORS_ORIGINS(self) -> List[str]:
         """Parse CORS origins from environment or use defaults"""
         if self.CORS_ORIGINS_STR:
             return [origin.strip() for origin in self.CORS_ORIGINS_STR.split(",")]
+        # Default origins for development and testing
+        # Note: Update CORS_ORIGINS_STR in production with your actual domains
         return [
             "http://localhost:3000",
             "http://localhost:3001",
-            "https://ajnova.vercel.app"
+            # Add your Vercel URL here or via environment variable
         ]
     
     # Supabase
@@ -85,6 +87,10 @@ def get_settings() -> Settings:
 
 # Global settings instance
 settings = get_settings()
+
+
+
+
 
 
 

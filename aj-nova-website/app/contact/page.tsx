@@ -50,7 +50,7 @@ const steps = [
   {
     number: "01",
     icon: ClipboardCheck,
-    title: "Check Eligibility",
+    title: "Profile Assessment",
     description: "Complete our quick assessment to see which programs match your profile"
   },
   {
@@ -87,7 +87,7 @@ const resources = [
 
 const purposeOptions = [
   "General Inquiry",
-  "Eligibility Assessment",
+  "Preliminary Profile Assessment",
   "Consultation Request",
   "University Admission",
   "Visa Assistance",
@@ -165,7 +165,7 @@ export default function ContactPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/eligibility-checker">
                   <BeamButton primary>
-                    Check Eligibility <ArrowRight className="w-4 h-4" />
+                    Start Assessment <ArrowRight className="w-4 h-4" />
                   </BeamButton>
                 </Link>
                 <Link href="/dashboard/consultations">
@@ -218,7 +218,7 @@ export default function ContactPage() {
                   Find out if you qualify for German public universities
                 </h3>
                 <p className="text-muted-foreground">
-                  Takes less than 60 seconds to complete our eligibility assessment
+                  Takes less than 60 seconds to complete our profile assessment
                 </p>
               </div>
               <Link href="/eligibility-checker">

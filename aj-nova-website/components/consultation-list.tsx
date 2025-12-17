@@ -24,12 +24,12 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { 
-  Calendar, 
-  Clock, 
-  Video, 
-  User, 
-  ExternalLink, 
+import {
+  Calendar,
+  Clock,
+  Video,
+  User,
+  ExternalLink,
   CalendarClock,
   XCircle,
   FileText,
@@ -37,6 +37,7 @@ import {
 } from 'lucide-react'
 import { Consultation, ConsultationStatus } from '@/lib/consultation-types'
 import { cn } from '@/lib/utils'
+import { createConsultationEvent, exportConsultationToCalendar, addToGoogleCalendar } from '@/lib/calendar-export'
 
 interface ConsultationListProps {
   consultations: Consultation[]
@@ -114,41 +115,44 @@ export function ConsultationList({
     }
   }
 
-  function downloadICS(consultation: Consultation) {
-    // Generate ICS file content
+  function handleAddToCalendar(consultation: Consultation) {
+    // Convert consultation to calendar event format
     const startDate = new Date(consultation.date)
     const [hours, minutes] = consultation.time.split(':')
     startDate.setHours(parseInt(hours), parseInt(minutes))
-    
-    const endDate = new Date(startDate)
-    endDate.setMinutes(endDate.getMinutes() + consultation.duration)
-    
-    const formatICSDate = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
-    }
-    
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//AJ NOVA//Consultation Scheduler//EN
-BEGIN:VEVENT
-UID:${consultation.id}@ajnova.com
-DTSTAMP:${formatICSDate(new Date())}
-DTSTART:${formatICSDate(startDate)}
-DTEND:${formatICSDate(endDate)}
-SUMMARY:Consultation with ${consultation.counsellorName}
-DESCRIPTION:${consultation.topic || 'Consultation meeting'}${consultation.meetingLink ? `\\n\\nJoin: ${consultation.meetingLink}` : ''}
-LOCATION:${consultation.platform === 'IN_PERSON' ? 'AJ NOVA Office' : 'Online'}
-STATUS:CONFIRMED
-END:VEVENT
-END:VCALENDAR`
-    
-    const blob = new Blob([icsContent], { type: 'text/calendar' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `consultation-${consultation.id}.ics`
-    a.click()
-    URL.revokeObjectURL(url)
+
+    const event = createConsultationEvent({
+      id: consultation.id,
+      scheduled_date: startDate,
+      duration_minutes: consultation.duration,
+      consultation_type: consultation.type,
+      counsellor_name: consultation.counsellorName,
+      notes: consultation.topic,
+      meeting_link: consultation.meetingLink,
+    })
+
+    // Export as .ics file
+    exportConsultationToCalendar(event)
+  }
+
+  function handleAddToGoogleCalendar(consultation: Consultation) {
+    // Convert consultation to calendar event format
+    const startDate = new Date(consultation.date)
+    const [hours, minutes] = consultation.time.split(':')
+    startDate.setHours(parseInt(hours), parseInt(minutes))
+
+    const event = createConsultationEvent({
+      id: consultation.id,
+      scheduled_date: startDate,
+      duration_minutes: consultation.duration,
+      consultation_type: consultation.type,
+      counsellor_name: consultation.counsellorName,
+      notes: consultation.topic,
+      meeting_link: consultation.meetingLink,
+    })
+
+    // Open Google Calendar
+    addToGoogleCalendar(event)
   }
 
   if (consultations.length === 0) {
@@ -242,13 +246,21 @@ END:VCALENDAR`
                         </a>
                       </Button>
                     )}
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
-                      onClick={() => downloadICS(consultation)}
+                      onClick={() => handleAddToCalendar(consultation)}
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Add to Calendar
+                      Download .ics
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleAddToGoogleCalendar(consultation)}
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Google Calendar
                     </Button>
                     {onReschedule && (
                       <Button 

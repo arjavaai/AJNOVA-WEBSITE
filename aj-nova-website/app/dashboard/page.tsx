@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { FileText, CheckCircle, Clock, Building2, FileCheck, Loader2, Calendar as CalendarIcon } from 'lucide-react'
+import { FileText, CheckCircle, Clock, Building2, FileCheck, Loader2, Calendar as CalendarIcon, Download } from 'lucide-react'
 import Link from 'next/link'
 import { APSForm } from '@/lib/aps-types'
 import { Consultation } from '@/lib/consultation-types'
 import { ProgressTracker } from '@/components/progress-tracker'
 import { RecentActivity, NotificationsPanel } from '@/components/recent-activity'
 import { QuickStats, ProfileSummaryCard, EligibilityCard, UpcomingEvents } from '@/components/dashboard-widgets'
+import { createConsultationEvent, exportConsultationToCalendar, addToGoogleCalendar } from '@/lib/calendar-export'
 
 export default function DashboardPage() {
   const [apsForm, setApsForm] = useState<APSForm | null>(null)
@@ -42,8 +43,8 @@ export default function DashboardPage() {
 
   async function fetchProfile() {
     try {
-      const response = await fetch('/api/profile')
-      const data = await response.json()
+      const { profiles } = await import('@/lib/api-client')
+      const data = await profiles.getMyProfile()
       setProfile(data.profile)
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -52,12 +53,11 @@ export default function DashboardPage() {
 
   async function fetchStats() {
     try {
-      const [appsRes, docsRes] = await Promise.all([
-        fetch('/api/applications?stats=true'),
-        fetch('/api/documents')
+      const { applications, documents } = await import('@/lib/api-client')
+      const [appsData, docsData] = await Promise.all([
+        applications.list(true),
+        documents.list()
       ])
-      const appsData = await appsRes.json()
-      const docsData = await docsRes.json()
 
       setStats({
         applicationsSubmitted: appsData.stats?.total || 0,
@@ -73,8 +73,8 @@ export default function DashboardPage() {
 
   async function fetchAPSStatus() {
     try {
-      const response = await fetch('/api/aps')
-      const data = await response.json()
+      const { aps } = await import('@/lib/api-client')
+      const data = await aps.get()
       setApsForm(data.form)
     } catch (error) {
       console.error('Error fetching APS status:', error)
@@ -85,11 +85,11 @@ export default function DashboardPage() {
 
   async function fetchUpcomingConsultations() {
     try {
-      const response = await fetch('/api/consultations?type=upcoming')
-      const data = await response.json()
+      const { consultations } = await import('@/lib/api-client')
+      const data = await consultations.list('upcoming')
       setUpcomingConsultations((data.consultations || []).map((c: any) => ({
         ...c,
-        date: new Date(c.date)
+        date: new Date(c.scheduled_date || c.date)
       })))
     } catch (error) {
       console.error('Error fetching consultations:', error)
@@ -108,8 +108,44 @@ export default function DashboardPage() {
       NEEDS_CORRECTION: { variant: 'destructive', label: 'Needs Correction' },
       REJECTED: { variant: 'destructive', label: 'Rejected' },
     }
-    
+
     return <Badge variant={config[status]?.variant}>{config[status]?.label}</Badge>
+  }
+
+  function handleExportConsultation(consultation: Consultation) {
+    const startDate = new Date(consultation.date)
+    const [hours, minutes] = consultation.time.split(':')
+    startDate.setHours(parseInt(hours), parseInt(minutes))
+
+    const event = createConsultationEvent({
+      id: consultation.id,
+      scheduled_date: startDate,
+      duration_minutes: consultation.duration || 30,
+      consultation_type: consultation.type,
+      counsellor_name: consultation.counsellorName,
+      notes: consultation.topic,
+      meeting_link: consultation.meetingLink,
+    })
+
+    exportConsultationToCalendar(event)
+  }
+
+  function handleAddToGoogleCalendar(consultation: Consultation) {
+    const startDate = new Date(consultation.date)
+    const [hours, minutes] = consultation.time.split(':')
+    startDate.setHours(parseInt(hours), parseInt(minutes))
+
+    const event = createConsultationEvent({
+      id: consultation.id,
+      scheduled_date: startDate,
+      duration_minutes: consultation.duration || 30,
+      consultation_type: consultation.type,
+      counsellor_name: consultation.counsellorName,
+      notes: consultation.topic,
+      meeting_link: consultation.meetingLink,
+    })
+
+    addToGoogleCalendar(event)
   }
   if (loading) {
     return (
@@ -272,9 +308,9 @@ export default function DashboardPage() {
                   key={consultation.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 flex-1">
                     <CalendarIcon className="w-5 h-5 text-primary mt-0.5" />
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium">{consultation.counsellorName}</p>
                       <p className="text-sm text-muted-foreground" suppressHydrationWarning>
                         {new Date(consultation.date).toLocaleDateString('en-US', {
@@ -288,11 +324,21 @@ export default function DashboardPage() {
                       )}
                     </div>
                   </div>
-                  <Link href="/dashboard/consultations">
-                    <Button variant="ghost" size="sm">
-                      View
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleExportConsultation(consultation)}
+                      title="Download .ics file"
+                    >
+                      <Download className="w-4 h-4" />
                     </Button>
-                  </Link>
+                    <Link href="/dashboard/consultations">
+                      <Button variant="ghost" size="sm">
+                        View
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>

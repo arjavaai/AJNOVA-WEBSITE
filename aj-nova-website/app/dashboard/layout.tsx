@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { FileText, Home, User, Building2, ClipboardCheck, Calculator, LogOut, Menu, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { NotificationsPanel } from '@/components/notifications-panel'
+import { DashboardFooter } from '@/components/dashboard-footer'
 
 export default function DashboardLayout({
   children,
@@ -14,10 +16,20 @@ export default function DashboardLayout({
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [userId, setUserId] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     setMounted(true)
+    fetchUser()
   }, [])
+
+  async function fetchUser() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      setUserId(user.id)
+    }
+  }
 
   async function handleLogout() {
     const supabase = createClient()
@@ -28,7 +40,7 @@ export default function DashboardLayout({
 
   return (
     <>
-      <div className="min-h-screen bg-background" suppressHydrationWarning>
+      <div className="min-h-screen bg-background flex flex-col" suppressHydrationWarning>
         {/* Pill-shaped Header */}
         <div className="fixed top-0 w-full z-50 flex justify-center pt-4 px-4" suppressHydrationWarning>
           <header className="relative w-full max-w-6xl">
@@ -89,7 +101,8 @@ export default function DashboardLayout({
 
                 {/* Profile & Logout - Desktop */}
                 <div className="hidden md:flex items-center gap-1">
-                  <Link 
+                  <NotificationsPanel userId={userId} />
+                  <Link
                     href="/dashboard/profile"
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-all"
                   >
@@ -117,9 +130,12 @@ export default function DashboardLayout({
             </div>
           </header>
         </div>
-        
+
         {/* Main content with top padding for fixed header */}
-        <main className="pt-20 md:pt-24">{children}</main>
+        <main className="pt-20 md:pt-24 flex-1">{children}</main>
+
+        {/* Footer */}
+        <DashboardFooter />
       </div>
 
       {/* Mobile Menu Overlay - Only render after mount to avoid hydration issues */}

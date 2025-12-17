@@ -4,7 +4,7 @@ import Link from "next/link"
 
 const features = [
   {
-    title: "Eligibility Checker",
+    title: "Preliminary Profile Assessment",
     desc: "Instant evaluation of your profile for German university admission requirements.",
     icon: CheckCircle,
   },

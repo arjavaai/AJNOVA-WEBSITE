@@ -76,14 +76,14 @@ export default function EligibilityCheckerPage() {
       {/* Header */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">
-          Check Your Eligibility for German Universities
+          Preliminary Profile Assessment for German Universities
         </h1>
         <p className="text-lg text-muted-foreground mb-2">
           Answer a few questions and learn your admission possibilities in under 2 minutes
         </p>
         <p className="text-sm text-muted-foreground">
           <AlertCircle className="w-4 h-4 inline mr-1" />
-          This is a preliminary tool; final decisions depend on APS verification and individual university criteria.
+          This is a preliminary assessment. Final eligibility depends on APS verification, uni-assist evaluation, and individual university requirements.
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export default function EligibilityCheckerPage() {
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>Your Academic Profile</CardTitle>
-          <CardDescription>Fill in your details to check eligibility</CardDescription>
+          <CardDescription>Fill in your details to assess your profile</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -287,7 +287,7 @@ export default function EligibilityCheckerPage() {
             <div className="flex gap-4">
               <Button type="submit" size="lg" className="flex-1">
                 <CheckCircle2 className="w-4 h-4 mr-2" />
-                Check My Eligibility
+                Assess My Profile
               </Button>
               {result && (
                 <Button type="button" variant="outline" size="lg" onClick={handleReset}>

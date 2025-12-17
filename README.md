@@ -24,16 +24,23 @@ A complete document generation and review workflow featuring:
 
 ### Prerequisites
 
+**Frontend:**
 - Node.js 18+ and npm/pnpm
 - Git
 - A code editor (VS Code recommended)
 
+**Backend:**
+- Python 3.13+ (recommended) or Python 3.10+
+- pip (Python package manager)
+- Virtual environment support
+
 ### Get the Website Running in 5 Minutes
 
+**Frontend Only:**
 ```bash
 # Clone the repository
 git clone https://github.com/arjavaai/AJNOVA-WEBSITE.git
-cd AJNOVA
+cd AJNOVA-WEBSITE
 
 # Navigate to the website directory
 cd aj-nova-website
@@ -51,12 +58,26 @@ pnpm dev
 # Open http://localhost:3000 in your browser
 ```
 
-That's it! The landing page should now be running locally.
+**Full Stack (Frontend + Backend):**
+```bash
+# Start Backend (from project root)
+START_BACKEND.bat
+
+# In a new terminal, start Frontend
+cd aj-nova-website
+npm run dev
+
+# Backend: http://localhost:8000
+# Frontend: http://localhost:3000
+# API Docs: http://localhost:8000/api/docs
+```
+
+That's it! The application should now be running locally.
 
 ## Project Structure
 
 ```
-AJNOVA/
+AJNOVA-WEBSITE/
 ├── aj-nova-website/          # Next.js marketing website & student dashboard
 │   ├── app/                  # Next.js 16 app directory
 │   │   ├── api/             # API routes
@@ -89,6 +110,30 @@ AJNOVA/
 │   ├── TEST_GUIDE.md             # Testing instructions
 │   └── QUICK_START.md            # Quick setup guide
 │
+├── backend/                # FastAPI backend (Python 3.13)
+│   ├── app/
+│   │   ├── main.py               # FastAPI application entry point
+│   │   ├── main_working.py       # Current working version
+│   │   ├── config.py             # Configuration settings
+│   │   ├── dependencies.py       # Dependency injection
+│   │   ├── api/v1/              # API endpoints
+│   │   │   ├── auth.py          # Google OAuth authentication
+│   │   │   ├── profiles.py      # Profile management
+│   │   │   ├── documents.py     # Document & AI generation
+│   │   │   ├── eligibility.py   # Eligibility checker
+│   │   │   └── ...              # Other endpoints
+│   │   ├── models/              # Pydantic models
+│   │   ├── services/            # Business logic
+│   │   │   ├── ai_service.py   # Google Gemini integration
+│   │   │   ├── auth_service.py # Authentication logic
+│   │   │   └── ...
+│   │   └── middleware/          # Custom middleware
+│   ├── venv/                    # Python 3.13 virtual environment
+│   ├── requirements.txt         # Python dependencies
+│   ├── .env.example            # Environment template
+│   └── README.md               # Backend documentation
+│
+├── START_BACKEND.bat       # Windows script to start backend
 ├── PRD/                    # Product Requirements Documents
 │   ├── overview.md         # High-level project vision
 │   ├── architecture.md     # System architecture
@@ -103,8 +148,7 @@ AJNOVA/
 │   ├── ADMIN DASHBOARD.MD
 │   └── [other specs]
 │
-└── other/                  # Additional resources
-    └── homepage.html       # Reference designs
+└── PYTHON_313_UPGRADE_SUCCESS.md  # Python upgrade documentation
 ```
 
 ## Key Concepts
@@ -118,6 +162,15 @@ AJNOVA/
 - Tailwind CSS 4.x for styling
 - Radix UI for accessible components
 - Framer Motion for animations
+
+**Backend:**
+- Python 3.13.11
+- FastAPI (modern, fast web framework)
+- Pydantic 2.12.5 for data validation
+- Supabase for database & authentication
+- Google Gemini AI for document generation
+- JWT-based authentication
+- RESTful API architecture
 
 **Design System:**
 - Shadcn/ui component library
@@ -283,6 +336,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 
 ## Tech Specs
 
+### Frontend
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | Next.js | 16.0.3 | React framework |
@@ -291,6 +345,17 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
 | Tailwind CSS | 4.1.9 | Styling |
 | Radix UI | Latest | Accessible components |
 | Framer Motion | Latest | Animations |
+
+### Backend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Python | 3.13.11 | Programming language |
+| FastAPI | 0.124.4 | Web framework |
+| Pydantic | 2.12.5 | Data validation |
+| Uvicorn | 0.38.0 | ASGI server |
+| Supabase | 2.27.0 | Database & auth |
+| Google Gemini | 0.8.6 | AI document generation |
+| JWT | Latest | Authentication tokens |
 
 ## License
 
