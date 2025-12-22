@@ -117,9 +117,15 @@ export default function ProfilePage() {
   async function fetchProfile() {
     try {
       const { profiles } = await import('@/lib/api-client')
-      const data = await profiles.getMyProfile()
+      const response = await profiles.getMyProfile()
+      
+      console.log('[Profile Page] API Response:', response)
 
-      if (data) {
+      // API returns { profile: {...} }
+      if (response && response.profile) {
+        const data = response.profile
+        console.log('[Profile Page] Profile data:', data)
+        
         setProfile({
           firstName: data.first_name || '',
           lastName: data.last_name || '',
@@ -143,6 +149,9 @@ export default function ProfilePage() {
           studyLevel: data.study_level || '',
           preferredProgram: data.preferred_program || ''
         })
+        console.log('[Profile Page] Profile state updated successfully')
+      } else {
+        console.log('[Profile Page] No profile data found in response')
       }
     } catch (error) {
       console.error('Error fetching profile:', error)

@@ -5,220 +5,182 @@ import { Footer } from "@/components/footer";
 import {
   GraduationCap,
   FileText,
-  Building,
   CreditCard,
   Plane,
-  Shield,
   CheckCircle,
   ArrowRight,
   Users,
-  Clock,
-  Target
+  Shield,
+  Sparkles,
+  AlertCircle,
+  BookOpen,
+  Home
 } from "lucide-react";
 
 const serviceCategories = [
   {
-    title: "Consultation Services",
-    icon: Users,
-    services: [
-      "Free initial consultation",
-      "Preliminary profile assessment",
-      "Course and university selection guidance",
-      "Application strategy planning",
-      "One-on-one counselling sessions"
-    ]
-  },
-  {
-    title: "Documentation Services",
-    icon: FileText,
-    services: [
-      "Profile creation assistance",
-      "APS form submission support",
-      "AI-powered SOP generation",
-      "Letter of Recommendation (LOR)",
-      "Resume/CV creation",
-      "Cover Letter writing",
-      "Document review and editing"
-    ]
-  },
-  {
-    title: "Application Services",
+    title: "Academic & Application Support Services",
+    description: "Comprehensive guidance for your university application journey",
     icon: GraduationCap,
+    gradient: "from-coral to-coral/80",
     services: [
-      "University application submission",
-      "Application tracking dashboard",
-      "Document management",
-      "Real-time status updates",
-      "Admission follow-ups"
+      {
+        name: "APS Preparation & Guidance",
+        description: "Complete support for APS certificate application and interview preparation"
+      },
+      {
+        name: "University Application & uni-assist Process Guidance",
+        description: "Step-by-step assistance with university applications and uni-assist procedures"
+      },
+      {
+        name: "Statement of Purpose (SOP) Drafting Support",
+        description: "Professional guidance to craft compelling SOPs that highlight your strengths"
+      },
+      {
+        name: "Letter of Recommendation (LOR) Drafting Support",
+        description: "Assistance in structuring effective recommendation letters"
+      },
+      {
+        name: "Resume / CV Preparation Support",
+        description: "Create professional academic CVs tailored for German universities"
+      },
+      {
+        name: "Cover Letter Drafting Support",
+        description: "Personalized cover letters aligned with program requirements"
+      }
     ]
   },
   {
-    title: "Financial Services",
+    title: "Financial & Insurance Guidance Services",
+    description: "Navigate financial requirements with confidence",
     icon: CreditCard,
+    gradient: "from-navy to-navy/80",
     services: [
-      "Blocked Account assistance",
-      "Health Insurance guidance",
-      "Education loan support",
-      "Financial planning advice",
-      "Scholarship guidance"
+      {
+        name: "Blocked Account Guidance & Support",
+        description: "Complete assistance with blocked account setup and documentation"
+      },
+      {
+        name: "Education Loan Guidance",
+        description: "Information and support for education loan options and applications"
+      },
+      {
+        name: "Health Insurance Guidance",
+        description: "Help selecting and activating appropriate health insurance coverage"
+      }
     ]
   },
   {
-    title: "On-Arrival Services",
+    title: "Post-Arrival Support Services in Germany",
+    description: "Smooth transition and settling into your new life in Germany",
     icon: Plane,
+    gradient: "from-peach to-coral/50",
     services: [
-      "Airport pickup arrangements",
-      "Bank account opening assistance",
-      "SIM card procurement",
-      "Accommodation support",
-      "City registration help"
+      {
+        name: "Airport Pickup Guidance & Coordination",
+        description: "Assistance coordinating safe airport pickup and initial transportation"
+      },
+      {
+        name: "SIM Card Guidance & Activation Support",
+        description: "Help with local SIM card selection and activation process"
+      },
+      {
+        name: "Accommodation Support & Settling-in Guidance",
+        description: "Support finding accommodation and settling into your new home"
+      }
     ]
-  },
-  {
-    title: "Additional Services",
-    icon: Shield,
-    services: [
-      "Flight booking assistance",
-      "Visa application support",
-      "Pre-departure orientation",
-      "Post-arrival support",
-      "APS verification guidance"
-    ]
-  }
-];
-
-const processSteps = [
-  {
-    step: 1,
-    title: "Initial Consultation",
-    description: "Book a free consultation to discuss your goals and assess eligibility"
-  },
-  {
-    step: 2,
-    title: "Documentation",
-    description: "Create profile, generate AI-powered documents, and prepare application materials"
-  },
-  {
-    step: 3,
-    title: "Application",
-    description: "Submit applications to selected universities and track progress"
-  },
-  {
-    step: 4,
-    title: "Financial Setup",
-    description: "Set up blocked account, health insurance, and other financial requirements"
-  },
-  {
-    step: 5,
-    title: "On-Arrival Support",
-    description: "Receive support for arrival, accommodation, and settling in Germany"
-  }
-];
-
-const features = [
-  {
-    icon: Target,
-    title: "Expert Guidance",
-    description: "Personalized counselling from experienced advisors who know the German admission process inside out"
-  },
-  {
-    icon: Clock,
-    title: "Time-Saving",
-    description: "Our AI-powered tools and streamlined processes save you weeks of work"
-  },
-  {
-    icon: CheckCircle,
-    title: "Proven Track Record",
-    description: "Comprehensive support with dedicated counsellors guiding you through every step"
   }
 ];
 
 export default function ServicesPage() {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-16 px-4">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 via-transparent to-transparent" />
+      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-coral/5 via-transparent to-navy/5" />
+        
+        {/* Decorative Elements */}
+        <div className="absolute top-20 right-10 w-72 h-72 bg-coral/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-10 w-96 h-96 bg-navy/10 rounded-full blur-3xl" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Our <span className="text-blue-500">Services</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-coral/10 rounded-full mb-6">
+              <Sparkles className="w-4 h-4 text-coral" />
+              <span className="text-sm font-medium text-coral">Comprehensive Support & Guidance</span>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-navy mb-6 tracking-tight">
+              Our <span className="text-coral">Services</span>
             </h1>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Comprehensive support for your German study journey - from initial consultation to settling in Germany
+            <p className="text-xl md:text-2xl text-navy/70 max-w-3xl mx-auto leading-relaxed">
+              Expert guidance for your German study journey - from application to arrival
             </p>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="p-6 rounded-xl border border-gray-800 bg-gray-900/50 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300"
-              >
-                <feature.icon className="w-12 h-12 text-blue-500 mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.description}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* Service Categories */}
-      <section className="py-16 px-4">
+      <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-            What We Offer
-          </h2>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-navy/10 rounded-full mb-4">
+              <BookOpen className="w-4 h-4 text-navy" />
+              <span className="text-sm font-medium text-navy">Complete Service Portfolio</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-navy mb-6">
+              What We Offer
+            </h2>
+            <p className="text-lg text-navy/70 max-w-2xl mx-auto">
+              Structured guidance and support services for every stage of your journey
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {serviceCategories.map((category) => (
+          <div className="space-y-16">
+            {serviceCategories.map((category, idx) => (
               <div
                 key={category.title}
-                className="p-8 rounded-xl border border-gray-800 bg-gray-900/50 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-300 group"
+                className="group"
               >
-                <category.icon className="w-16 h-16 text-blue-500 mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="text-2xl font-semibold text-white mb-4">{category.title}</h3>
-                <ul className="space-y-3">
-                  {category.services.map((service) => (
-                    <li key={service} className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-400">{service}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Flow */}
-      <section className="py-16 px-4 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-            How It Works
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative">
-            {/* Connection Line - Desktop */}
-            <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500/20 via-blue-500 to-blue-500/20" />
-
-            {processSteps.map((step, index) => (
-              <div key={step.step} className="relative">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-24 h-24 rounded-full border-4 border-blue-500 bg-black flex items-center justify-center mb-4 relative z-10">
-                    <span className="text-3xl font-bold text-blue-500">{step.step}</span>
+                {/* Category Header */}
+                <div className="mb-8">
+                  <div className="flex items-start gap-6 mb-8">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${category.gradient} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                      <category.icon className="w-9 h-9 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl md:text-4xl font-display font-bold text-navy mb-2">
+                        {category.title}
+                      </h3>
+                      <p className="text-navy/70 text-lg">
+                        {category.description}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
-                  <p className="text-gray-400">{step.description}</p>
-                  {index < processSteps.length - 1 && (
-                    <ArrowRight className="hidden md:block absolute top-10 -right-12 w-8 h-8 text-blue-500" />
-                  )}
+                  <div className="h-px bg-gradient-to-r from-coral/50 via-coral/20 to-transparent"></div>
+                </div>
+
+                {/* Services List */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-0 md:pl-22">
+                  {category.services.map((service, serviceIdx) => (
+                    <div
+                      key={serviceIdx}
+                      className="flex items-start gap-4 group/item"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-coral/20 flex items-center justify-center flex-shrink-0 mt-1 group-hover/item:bg-coral group-hover/item:scale-110 transition-all duration-300">
+                        <CheckCircle className="w-4 h-4 text-coral group-hover/item:text-white transition-colors" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-navy mb-1.5 group-hover/item:text-coral transition-colors">
+                          {service.name}
+                        </h4>
+                        <p className="text-sm text-navy/60 leading-relaxed">
+                          {service.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
@@ -226,30 +188,77 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="p-12 rounded-2xl border border-gray-800 bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-sm">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Get Started?
-            </h2>
-            <p className="text-xl text-gray-400 mb-8">
-              Book your free consultation today and take the first step towards your German university dream
+      {/* Important Disclaimer */}
+      <section className="py-20 px-4 bg-gradient-to-b from-transparent via-coral/5 to-transparent relative">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(242,92,69,0.05),transparent_70%)]" />
+        
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="flex items-start gap-6 mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-coral/20 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-7 h-7 text-coral" />
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-navy mb-2">
+                Important Note
+              </h2>
+              <div className="h-1 w-16 bg-coral rounded-full"></div>
+            </div>
+          </div>
+          
+          <div className="space-y-4 pl-0 md:pl-20 border-l-4 border-coral/30 pl-6">
+            <p className="text-lg text-navy/80 leading-relaxed">
+              All listed services are positioned as <span className="font-semibold text-coral">guidance and support only</span>. AJ NOVA does not guarantee admissions, visas, financial approvals, or service outcomes.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="/dashboard/eligibility"
-                className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors inline-flex items-center justify-center gap-2"
-              >
-                Start Assessment
-                <ArrowRight className="w-5 h-5" />
-              </a>
-              <a
-                href="/contact"
-                className="px-8 py-4 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors inline-flex items-center justify-center gap-2 border border-gray-700"
-              >
-                Book Free Consultation
-              </a>
+            <p className="text-lg text-navy/80 leading-relaxed">
+              Final decisions and confirmations are made by <span className="font-semibold text-navy">universities, financial institutions, service providers, and official authorities</span>.
+            </p>
+            <div className="flex items-start gap-3 pt-4 mt-4">
+              <Shield className="w-5 h-5 text-coral flex-shrink-0 mt-1" />
+              <p className="text-navy/70 italic">
+                Our commitment is to provide clear, honest guidance and structured support throughout your journey.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 px-4">
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="relative overflow-hidden rounded-3xl p-12 md:p-16 bg-gradient-to-br from-navy via-navy/95 to-navy/90 shadow-xl">
+            {/* Decorative Elements */}
+            <div className="absolute top-0 right-0 w-72 h-72 bg-coral/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-coral/10 rounded-full blur-3xl" />
+            
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-coral/20 rounded-full mb-6">
+                <Users className="w-4 h-4 text-coral" />
+                <span className="text-sm font-medium text-coral">Start Your Journey Today</span>
+              </div>
+              
+              <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-6">
+                Ready to Get <span className="text-coral">Started?</span>
+              </h2>
+              <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
+                Book your free consultation today and take the first step towards your German university dream
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a
+                  href="/contact"
+                  className="group inline-flex items-center gap-2 px-8 py-4 bg-coral hover:bg-coral/90 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-coral/50 hover:scale-105"
+                >
+                  <span>Book Free Consultation</span>
+                  <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                </a>
+                <a
+                  href="/dashboard/eligibility"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all duration-300 backdrop-blur-sm border border-white/20"
+                >
+                  <span>Check Eligibility</span>
+                  <ArrowRight className="w-5 h-5" />
+                </a>
+              </div>
             </div>
           </div>
         </div>

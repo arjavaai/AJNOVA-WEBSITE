@@ -50,7 +50,7 @@ async def create_application(
     supabase: Client = Depends(get_supabase)
 ):
     """Create new application (counsellor/admin only)"""
-    application_data = application.dict()
+    application_data = application.model_dump()
     
     response = supabase.table("applications").insert(application_data).execute()
     
@@ -119,6 +119,8 @@ async def delete_application(
     supabase.table("applications").delete().eq("id", str(application_id)).execute()
     
     return {"message": "Application deleted successfully"}
+
+
 
 
 

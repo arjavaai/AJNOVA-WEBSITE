@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,49 +21,135 @@ import {
   Eye,
   Clock,
   FileText,
-  Filter
+  Filter,
+  Loader2,
+  RefreshCw
 } from 'lucide-react'
-import { mockDocumentReviews, getStatusColor, formatActivityTime } from '@/lib/admin-mock-data'
-import { DocumentReview } from '@/lib/admin-types'
+import { getStatusColor, formatActivityTime } from '@/lib/admin-mock-data'
+import { cn } from '@/lib/utils'
+
+interface Document {
+  id: string
+  type: string
+  title?: string
+  status: string
+  student_id: string
+  created_at: string
+  updated_at: string
+}
 
 export default function DocumentReviewPage() {
-  const [documents, setDocuments] = useState<DocumentReview[]>(mockDocumentReviews)
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('ALL')
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
 
+  useEffect(() => {
+    fetchDocuments()
+
+    const interval = setInterval(() => {
+      fetchDocuments(true)
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  async function fetchDocuments(silent = false) {
+    try {
+      if (!silent) {
+        setRefreshing(true)
+      }
+
+      const { documents: documentsAPI } = await import('@/lib/api-client')
+      const data = await documentsAPI.list()
+      setDocuments(data.documents || [])
+    } catch (error) {
+      console.error('Error fetching documents:', error)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+      setLastUpdated(new Date())
+    }
+  }
+
+  function handleManualRefresh() {
+    fetchDocuments()
+  }
+
   const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.studentName.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesType = typeFilter === 'ALL' || doc.type === typeFilter
-    const matchesStatus = statusFilter === 'ALL' || doc.status === statusFilter
-    
+    const matchesSearch = doc.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         doc.title?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesType = typeFilter === 'ALL' || doc.type?.toUpperCase() === typeFilter.toUpperCase()
+    const matchesStatus = statusFilter === 'ALL' || doc.status?.toUpperCase() === statusFilter.toUpperCase()
+
     return matchesSearch && matchesType && matchesStatus
   })
 
-  const pendingCount = documents.filter(d => d.status === 'PENDING').length
-  const inReviewCount = documents.filter(d => d.status === 'IN_REVIEW').length
-  const approvedCount = documents.filter(d => d.status === 'APPROVED').length
+  const pendingCount = documents.filter(d => d.status === 'submitted').length
+  const inReviewCount = documents.filter(d => d.status === 'under_review').length
+  const approvedCount = documents.filter(d => d.status === 'approved').length
 
-  function handleApprove(id: string) {
-    setDocuments(documents.map(doc =>
-      doc.id === id ? { ...doc, status: 'APPROVED' as const, reviewedAt: new Date() } : doc
-    ))
+  async function handleApprove(id: string) {
+    try {
+      const { documents: documentsAPI } = await import('@/lib/api-client')
+      await documentsAPI.approve(id)
+      await fetchDocuments()
+    } catch (error) {
+      console.error('Error approving document:', error)
+    }
   }
 
-  function handleReject(id: string) {
-    setDocuments(documents.map(doc =>
-      doc.id === id ? { ...doc, status: 'REJECTED' as const, reviewedAt: new Date() } : doc
-    ))
+  async function handleReject(id: string) {
+    try {
+      const { documents: documentsAPI } = await import('@/lib/api-client')
+      await documentsAPI.reject(id, 'Rejected by admin')
+      await fetchDocuments()
+    } catch (error) {
+      console.error('Error rejecting document:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
   }
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Document Review Queue</h1>
-        <p className="text-muted-foreground">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-3xl font-bold">Document Review Queue</h1>
+          <div className="flex items-center gap-3">
+            {lastUpdated && (
+              <div className="text-sm text-muted-foreground flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                Updated {formatActivityTime(lastUpdated)}
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCw className={cn("w-4 h-4 mr-2", refreshing && "animate-spin")} />
+              Refresh
+            </Button>
+          </div>
+        </div>
+        <div className="text-muted-foreground">
           Review and approve student documents
-        </p>
+          <Badge variant="secondary" className="ml-2">
+            Auto-refreshes every 30s
+          </Badge>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -197,39 +283,31 @@ export default function DocumentReviewPage() {
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4" />
                           <span className="font-medium">
-                            {doc.type.replace('_', ' ')}
+                            {doc.type?.replace('_', ' ').toUpperCase() || 'N/A'}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">{doc.studentName}</div>
+                        <div className="font-medium">{doc.title || doc.student_id}</div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-muted-foreground">
-                          {formatActivityTime(doc.submittedAt)}
+                          {formatActivityTime(new Date(doc.created_at))}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          className={
-                            doc.priority === 'HIGH'
-                              ? 'bg-red-100 text-red-800'
-                              : doc.priority === 'MEDIUM'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }
-                        >
-                          {doc.priority}
+                        <Badge variant="outline">
+                          NORMAL
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(doc.status)}>
-                          {doc.status.replace('_', ' ')}
+                        <Badge className={getStatusColor(doc.status?.toUpperCase())}>
+                          {doc.status?.replace('_', ' ').toUpperCase() || 'UNKNOWN'}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {doc.reviewedBy || '-'}
+                          Admin
                         </div>
                       </TableCell>
                       <TableCell>
@@ -237,7 +315,7 @@ export default function DocumentReviewPage() {
                           <Button variant="ghost" size="sm">
                             <Eye className="w-4 h-4" />
                           </Button>
-                          {doc.status === 'PENDING' || doc.status === 'IN_REVIEW' ? (
+                          {(doc.status === 'submitted' || doc.status === 'under_review') ? (
                             <>
                               <Button
                                 variant="ghost"

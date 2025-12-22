@@ -12,8 +12,12 @@ import { ProgressTracker } from '@/components/progress-tracker'
 import { RecentActivity, NotificationsPanel } from '@/components/recent-activity'
 import { QuickStats, ProfileSummaryCard, EligibilityCard, UpcomingEvents } from '@/components/dashboard-widgets'
 import { createConsultationEvent, exportConsultationToCalendar, addToGoogleCalendar } from '@/lib/calendar-export'
+import { ProgressStage } from '@/lib/dashboard-types'
+import { createClient } from '@/lib/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
 export default function DashboardPage() {
+  const { toast } = useToast()
   const [apsForm, setApsForm] = useState<APSForm | null>(null)
   const [loadingAPS, setLoadingAPS] = useState(true)
   const [upcomingConsultations, setUpcomingConsultations] = useState<Consultation[]>([])
@@ -21,23 +25,184 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<any>(null)
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
+  // Initial data fetch
   useEffect(() => {
     fetchAllData()
+    getUserId()
   }, [])
+
+  // Update stats when profile changes
+  useEffect(() => {
+    if (profile && stats) {
+      setStats(prevStats => ({
+        ...prevStats,
+        profileCompletion: profile.completion_percentage || 0
+      }))
+    }
+  }, [profile])
+
+  // Real-time Supabase subscriptions
+  useEffect(() => {
+    if (!userId) return
+
+    const supabase = createClient()
+    
+    // Subscribe to profile changes
+    const profileChannel = supabase
+      .channel('profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('[Real-time] Profile updated:', payload)
+          fetchProfile()
+          toast({
+            title: "Profile Updated",
+            description: "Your profile has been updated in real-time.",
+            duration: 3000,
+          })
+        }
+      )
+      .subscribe()
+
+    // Subscribe to APS submission changes
+    const apsChannel = supabase
+      .channel('aps-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'aps_submissions',
+          filter: `student_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('[Real-time] APS form updated:', payload)
+          fetchAPSStatus()
+          const eventType = payload.eventType
+          if (eventType === 'UPDATE') {
+            const newStatus = (payload.new as any)?.status
+            let message = "Your APS form has been updated."
+            if (newStatus === 'verified' || newStatus === 'VERIFIED') {
+              message = "🎉 Your APS form has been verified!"
+            } else if (newStatus === 'needs_correction' || newStatus === 'NEEDS_CORRECTION') {
+              message = "⚠️ Your APS form needs corrections."
+            }
+            toast({
+              title: "APS Status Changed",
+              description: message,
+              duration: 5000,
+            })
+          }
+        }
+      )
+      .subscribe()
+
+    // Subscribe to document changes
+    const documentsChannel = supabase
+      .channel('documents-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'documents',
+          filter: `student_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('[Real-time] Documents updated:', payload)
+          fetchStats()
+          const eventType = payload.eventType
+          if (eventType === 'UPDATE') {
+            const newStatus = (payload.new as any)?.status
+            if (newStatus === 'approved' || newStatus === 'APPROVED') {
+              toast({
+                title: "Document Approved ✅",
+                description: "One of your documents has been approved!",
+                duration: 5000,
+              })
+            }
+          }
+        }
+      )
+      .subscribe()
+
+    // Subscribe to application changes
+    const applicationsChannel = supabase
+      .channel('applications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'applications',
+          filter: `student_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('[Real-time] Applications updated:', payload)
+          fetchStats()
+          const eventType = payload.eventType
+          if (eventType === 'INSERT') {
+            toast({
+              title: "New Application Created 🎓",
+              description: "A new university application has been added.",
+              duration: 5000,
+            })
+          } else if (eventType === 'UPDATE') {
+            const newStatus = (payload.new as any)?.status
+            if (newStatus === 'accepted' || newStatus === 'ACCEPTED') {
+              toast({
+                title: "🎉 Congratulations!",
+                description: "You've been accepted to a university!",
+                duration: 8000,
+              })
+            }
+          }
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscriptions
+    return () => {
+      supabase.removeChannel(profileChannel)
+      supabase.removeChannel(apsChannel)
+      supabase.removeChannel(documentsChannel)
+      supabase.removeChannel(applicationsChannel)
+    }
+  }, [userId])
+
+  async function getUserId() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      setUserId(user.id)
+    }
+  }
 
   async function fetchAllData() {
     try {
+      setIsRefreshing(true)
       await Promise.all([
         fetchAPSStatus(),
         fetchUpcomingConsultations(),
         fetchProfile(),
         fetchStats()
       ])
+      setLastUpdated(new Date())
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
       setLoading(false)
+      setIsRefreshing(false)
     }
   }
 
@@ -53,18 +218,23 @@ export default function DashboardPage() {
 
   async function fetchStats() {
     try {
-      const { applications, documents } = await import('@/lib/api-client')
-      const [appsData, docsData] = await Promise.all([
+      const { applications, documents, profiles } = await import('@/lib/api-client')
+      const [appsData, docsData, profileData] = await Promise.all([
         applications.list(true),
-        documents.list()
+        documents.list(),
+        profiles.getMyProfile()
       ])
 
+      console.log('Applications data:', appsData)
+      console.log('Documents data:', docsData)
+      console.log('Profile data for stats:', profileData)
+
       setStats({
-        applicationsSubmitted: appsData.stats?.total || 0,
+        applicationsSubmitted: appsData.total || 0,
         documentsUploaded: docsData.documents?.length || 0,
-        documentsApproved: docsData.documents?.filter((d: any) => d.status === 'APPROVED').length || 0,
+        documentsApproved: docsData.documents?.filter((d: any) => d.status === 'APPROVED' || d.status === 'approved').length || 0,
         apsStatus: apsForm?.status || 'Not Started',
-        profileCompletion: profile?.completion_percentage || 0
+        profileCompletion: profileData?.profile?.completion_percentage || 0
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -78,6 +248,8 @@ export default function DashboardPage() {
       setApsForm(data.form)
     } catch (error) {
       console.error('Error fetching APS status:', error)
+      // Set null form on error - user hasn't started
+      setApsForm(null)
     } finally {
       setLoadingAPS(false)
     }
@@ -159,14 +331,98 @@ export default function DashboardPage() {
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
     : 'Student'
 
+  // Calculate progress stages based on actual data
+  const progressStages: ProgressStage[] = [
+    {
+      id: 'CONSULTATION',
+      name: 'Consultation',
+      status: upcomingConsultations.length > 0 || profile ? 'COMPLETED' : 'PENDING',
+      order: 1,
+      completionDate: upcomingConsultations[0]?.date
+    },
+    {
+      id: 'ELIGIBILITY',
+      name: 'Eligibility',
+      status: profile?.completion_percentage >= 50 ? 'COMPLETED' : 
+              profile ? 'IN_PROGRESS' : 'PENDING',
+      order: 2,
+      completionDate: profile?.created_at ? new Date(profile.created_at) : undefined
+    },
+    {
+      id: 'APS',
+      name: 'APS Form',
+      status: apsForm?.status === 'VERIFIED' || apsForm?.status === 'verified' ? 'COMPLETED' : 
+              apsForm?.status === 'SUBMITTED' || apsForm?.status === 'submitted' || 
+              apsForm?.status === 'UNDER_REVIEW' || apsForm?.status === 'under_review' ? 'IN_PROGRESS' :
+              apsForm?.status === 'DRAFT' || apsForm?.status === 'draft' || 
+              apsForm?.status === 'NEEDS_CORRECTION' || apsForm?.status === 'needs_correction' ? 'NEEDS_ACTION' : 'PENDING',
+      order: 3,
+      completionDate: apsForm?.verifiedAt ? new Date(apsForm.verifiedAt) : undefined
+    },
+    {
+      id: 'DOCUMENTS',
+      name: 'AI Documents',
+      status: stats?.documentsApproved >= 3 ? 'COMPLETED' :
+              stats?.documentsApproved >= 1 ? 'IN_PROGRESS' :
+              stats?.documentsUploaded > 0 ? 'NEEDS_ACTION' : 'PENDING',
+      order: 4
+    },
+    {
+      id: 'REVIEW',
+      name: 'Final Review',
+      status: stats?.documentsApproved >= 3 && apsForm?.status === 'VERIFIED' ? 'IN_PROGRESS' : 'PENDING',
+      order: 5
+    },
+    {
+      id: 'SUBMISSION',
+      name: 'Application',
+      status: stats?.applicationsSubmitted > 0 ? 'COMPLETED' : 'PENDING',
+      order: 6
+    }
+  ]
+
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Welcome back, {studentName}!</h1>
-        <p className="text-muted-foreground">
-          Your application progress is automatically saved. Continue from where you left off.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Welcome back, {studentName}!</h1>
+            <p className="text-muted-foreground">
+              Your application progress is automatically saved. Continue from where you left off.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Real-time status indicator */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
+                <span suppressHydrationWarning>
+                  {isRefreshing ? 'Updating...' : `Updated ${lastUpdated.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`}
+                </span>
+              </div>
+            </div>
+            {/* Manual refresh button */}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => fetchAllData()}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Refreshing
+                </>
+              ) : (
+                <>
+                  <Clock className="w-4 h-4 mr-2" />
+                  Refresh
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Quick Stats */}
@@ -225,6 +481,9 @@ export default function DashboardPage() {
           </Card>
         </div>
       )}
+
+      {/* Progress Tracker */}
+      <ProgressTracker stages={progressStages} className="mb-8" />
 
       {/* Old Stats Cards - Kept for backward compatibility */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 hidden">
@@ -386,13 +645,13 @@ export default function DashboardPage() {
                 </div>
                 <Link href="/dashboard/aps-form">
                   <Button>
-                    {apsForm.status === 'NOT_STARTED' || apsForm.status === 'DRAFT' 
-                      ? 'Continue Form' 
+                    {apsForm.status === 'NOT_STARTED' || apsForm.status === 'DRAFT'
+                      ? 'Continue Form'
                       : 'View Form'}
                   </Button>
                 </Link>
               </div>
-              
+
               {apsForm.status === 'NEEDS_CORRECTION' && (
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                   <p className="text-sm font-medium text-amber-900 mb-1">Action Required</p>
@@ -401,7 +660,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
               )}
-              
+
               {apsForm.status === 'VERIFIED' && (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-sm font-medium text-green-900 mb-1">Verified Successfully!</p>
@@ -412,7 +671,18 @@ export default function DashboardPage() {
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Unable to load APS status</p>
+            <div className="text-center py-8">
+              <FileCheck className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-20" />
+              <p className="text-sm font-medium mb-1">No APS Form Started</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Start your APS verification process to study in Germany
+              </p>
+              <Link href="/dashboard/aps-form">
+                <Button>
+                  Start APS Form
+                </Button>
+              </Link>
+            </div>
           )}
         </CardContent>
       </Card>

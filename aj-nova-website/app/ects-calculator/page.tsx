@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { BackgroundGrid } from '@/components/background-grid'
 import { Calculator, Loader2 } from 'lucide-react'
 
 type CalculationMethod = 'ects' | 'south-asia' | 'usa-canada' | 'uk' | 'other'
@@ -114,7 +113,6 @@ export default function ECTSCalculatorPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <BackgroundGrid />
       <Navbar />
 
       {/* Main Content */}

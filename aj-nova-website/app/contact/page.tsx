@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { BackgroundGrid } from "@/components/background-grid";
 import { BeamButton } from "@/components/beam-button";
 import { FlashlightCard } from "@/components/flashlight-card";
 import { 
@@ -140,7 +139,6 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-coral/20">
-      <BackgroundGrid />
       <Navbar />
 
       {/* Hero Section */}

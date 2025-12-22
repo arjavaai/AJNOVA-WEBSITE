@@ -107,7 +107,7 @@ class AuthService:
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
-            user=UserResponse(**user.dict())
+            user=UserResponse(**user.model_dump())
         )
     
     def get_google_oauth_url(self) -> str:

@@ -10,7 +10,15 @@
       "Bash(curl:*)",
       "Bash(cat:*)",
       "Bash(pip install:*)",
-      "Bash(python -m app.main:*)"
+      "Bash(python -m app.main:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(cmd /c KILL_ALL_BACKENDS.bat)",
+      "Bash(cmd /c START_BACKEND_CLEAN.bat)",
+      "Bash(timeout /t 10 /nobreak)",
+      "Bash(python:*)",
+      "Bash(dir:*)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []

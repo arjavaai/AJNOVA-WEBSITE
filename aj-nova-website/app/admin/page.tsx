@@ -16,8 +16,7 @@ import {
   CheckCircle2,
   AlertCircle,
   BarChart3,
-  Loader2,
-  Calculator
+  Loader2
 } from 'lucide-react'
 import {
   formatActivityTime,
@@ -58,56 +57,72 @@ export default function AdminDashboardPage() {
 
   async function fetchAdminData() {
     try {
-      const { admin: adminAPI, documents: documentsAPI, consultations: consultationsAPI, applications: applicationsAPI } = await import('@/lib/api-client')
-
-      // Fetch all data in parallel
+      // Import API client
+      const { admin } = await import('@/lib/api-client')
+      
+      // Fetch all data in parallel from backend API using admin endpoints
       const [usersData, docsData, consultationsData, appsData, apsData] = await Promise.all([
-        adminAPI.getUsers(),
-        documentsAPI.list(),
-        consultationsAPI.list('upcoming'),
-        applicationsAPI.list(false),
-        adminAPI.getReviewQueue().catch(() => ({ forms: [] })) // Fallback if endpoint doesn't exist yet
+        admin.getUsers(),
+        admin.getAllDocuments().catch(() => ({ documents: [] })),
+        admin.getAllConsultations().catch(() => ({ consultations: [] })),
+        admin.getAllApplications().catch(() => ({ applications: [] })),
+        admin.getAPSSubmissions().catch(() => ({ submissions: [] }))
       ])
 
       // Calculate metrics from real data
-      const totalStudents = usersData.users?.length || 0
-      const activeStudents = usersData.users?.filter((u: any) => u.last_sign_in_at)?.length || 0
-      const pendingReviews = docsData.documents?.filter((d: any) =>
-        d.status === 'SUBMITTED' || d.status === 'UNDER_REVIEW'
-      )?.length || 0
-      const upcomingConsultations = consultationsData.consultations?.length || 0
-      const totalDocs = docsData.documents?.length || 1
-      const approvedDocs = docsData.documents?.filter((d: any) => d.status === 'APPROVED')?.length || 0
+      const allUsers = usersData.users || []
+      const totalStudents = allUsers.filter((u: any) => u.role === 'student').length || 0
+      const activeStudents = allUsers.filter((u: any) => 
+        u.role === 'student' && u.last_sign_in_at
+      ).length || 0
+      
+      const allDocs = docsData.documents || []
+      const pendingReviews = allDocs.filter((d: any) =>
+        d.status === 'SUBMITTED' || d.status === 'UNDER_REVIEW' || d.status === 'submitted' || d.status === 'under_review'
+      ).length || 0
+      
+      const allConsultations = consultationsData.consultations || []
+      const upcomingConsultations = allConsultations.filter((c: any) => {
+        const schedDate = new Date(c.scheduled_at)
+        return schedDate > new Date()
+      }).length || 0
+      
+      const totalDocs = allDocs.length || 1
+      const approvedDocs = allDocs.filter((d: any) => 
+        d.status === 'APPROVED' || d.status === 'approved'
+      ).length || 0
       const documentApprovalRate = totalDocs > 0 ? Math.round((approvedDocs / totalDocs) * 100) : 0
       
       // Get recent applications (last 7 days)
-      const recentApplications = appsData.applications?.filter((a: any) => {
+      const allApps = appsData.applications || []
+      const recentApplications = allApps.filter((a: any) => {
         const createdAt = new Date(a.created_at)
         const weekAgo = new Date()
         weekAgo.setDate(weekAgo.getDate() - 7)
         return createdAt >= weekAgo
-      })?.length || 0
+      }).length || 0
 
       // Calculate APS verified count (this month)
       const currentMonth = new Date().getMonth()
       const currentYear = new Date().getFullYear()
-      const verifiedAPS = apsData.forms?.filter((aps: any) => {
-        if (aps.status !== 'VERIFIED') return false
+      const allAPS = apsData.submissions || []
+      const verifiedAPS = allAPS.filter((aps: any) => {
+        if (aps.status !== 'VERIFIED' && aps.status !== 'verified') return false
         const verifiedDate = new Date(aps.updated_at || aps.created_at)
         return verifiedDate.getMonth() === currentMonth && verifiedDate.getFullYear() === currentYear
-      })?.length || 0
+      }).length || 0
 
       // Count active applications (not rejected or withdrawn)
-      const activeApplications = appsData.applications?.filter((a: any) => 
-        !['rejected', 'withdrawn'].includes(a.status?.toLowerCase())
-      )?.length || 0
+      const activeApplications = allApps.filter((a: any) => 
+        !['rejected', 'withdrawn', 'REJECTED', 'WITHDRAWN'].includes(a.status)
+      ).length || 0
 
       // Count documents approved this month
-      const documentsApproved = docsData.documents?.filter((d: any) => {
-        if (d.status !== 'APPROVED') return false
+      const documentsApproved = allDocs.filter((d: any) => {
+        if (d.status !== 'APPROVED' && d.status !== 'approved') return false
         const approvedDate = new Date(d.updated_at || d.created_at)
         return approvedDate.getMonth() === currentMonth && approvedDate.getFullYear() === currentYear
-      })?.length || 0
+      }).length || 0
 
       setMetrics({
         totalStudents,
@@ -126,28 +141,45 @@ export default function AdminDashboardPage() {
       const recentActivities: Activity[] = []
 
       // Add recent document submissions
-      docsData.documents?.slice(0, 3).forEach((doc: any) => {
-        recentActivities.push({
-          id: doc.id,
-          type: 'DOCUMENT_SUBMITTED',
-          studentName: doc.student_name || 'Student',
-          description: `Submitted ${doc.type} for review`,
-          timestamp: new Date(doc.created_at)
-        })
+      allDocs.slice(0, 3).forEach((doc: any) => {
+        if (doc.created_at) {
+          recentActivities.push({
+            id: doc.id,
+            type: 'DOCUMENT_SUBMITTED',
+            studentName: doc.student_name || doc.user_name || 'Student',
+            description: `Submitted ${doc.type || 'document'} for review`,
+            timestamp: new Date(doc.created_at)
+          })
+        }
       })
 
       // Add recent applications
-      appsData.applications?.slice(0, 2).forEach((app: any) => {
-        recentActivities.push({
-          id: app.id,
-          type: 'APPLICATION_UPDATED',
-          studentName: app.student_name || 'Student',
-          description: `Applied to ${app.university?.name || 'University'}`,
-          timestamp: new Date(app.created_at)
-        })
+      allApps.slice(0, 2).forEach((app: any) => {
+        if (app.created_at) {
+          recentActivities.push({
+            id: app.id,
+            type: 'APPLICATION_UPDATED',
+            studentName: app.student_name || app.user_name || 'Student',
+            description: `Applied to ${app.university?.name || app.university_name || 'University'}`,
+            timestamp: new Date(app.created_at)
+          })
+        }
       })
 
-      // Sort by timestamp
+      // Add recent APS submissions
+      allAPS.slice(0, 2).forEach((aps: any) => {
+        if (aps.created_at) {
+          recentActivities.push({
+            id: aps.id,
+            type: 'DOCUMENT_SUBMITTED',
+            studentName: aps.student_name || 'Student',
+            description: `Submitted APS form`,
+            timestamp: new Date(aps.created_at)
+          })
+        }
+      })
+
+      // Sort by timestamp (most recent first)
       recentActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       setActivities(recentActivities.slice(0, 5))
 
@@ -255,36 +287,6 @@ export default function AdminDashboardPage() {
               Document approval rate
             </p>
             <Progress value={metrics.documentApprovalRate} className="h-1 mt-3" />
-          </CardContent>
-        </Card>
-
-        {/* ECTS Calculator Access */}
-        <Card className="md:col-span-2 lg:col-span-4 bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="text-sm font-medium text-indigo-900">
-                ECTS Calculator
-              </CardTitle>
-              <p className="text-xs text-indigo-700 mt-1">
-                Quick access to international degree ECTS estimation tool
-              </p>
-            </div>
-            <Calculator className="w-6 h-6 text-indigo-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <p className="text-sm text-indigo-900">
-                  Estimate ECTS credits for international degrees from 100+ countries with specialized conversion formulas for EU, South Asia, USA/Canada, and UK education systems.
-                </p>
-              </div>
-              <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
-                <Link href="/ects-calculator">
-                  <Calculator className="w-4 h-4 mr-2" />
-                  Open Calculator
-                </Link>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -403,12 +405,6 @@ export default function AdminDashboardPage() {
                 <Link href="/admin/documents">
                   <FileText className="w-4 h-4 mr-2" />
                   Review Documents
-                </Link>
-              </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/ects-calculator">
-                  <Calculator className="w-4 h-4 mr-2" />
-                  ECTS Calculator
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start" asChild>

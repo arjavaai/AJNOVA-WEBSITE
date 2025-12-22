@@ -36,6 +36,33 @@ export default function ConsultationsPage() {
     fetchData()
   }, [])
 
+  // Transform backend consultation data to frontend format
+  function transformConsultation(data: any): Consultation {
+    const scheduledAt = new Date(data.scheduled_at)
+    const hours = scheduledAt.getHours()
+    const minutes = scheduledAt.getMinutes()
+    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+
+    return {
+      id: data.id,
+      studentId: data.student_id,
+      counsellorId: data.counsellor_id || '',
+      counsellorName: data.counsellor_name || 'Unassigned',
+      date: scheduledAt,
+      time: timeString,
+      duration: (data.duration_minutes || 30) as ConsultationDuration,
+      type: (data.consultation_type || 'INITIAL') as ConsultationType,
+      status: (data.status?.toUpperCase() || 'SCHEDULED') as ConsultationStatus,
+      topic: data.notes,
+      platform: 'ZOOM',
+      meetingLink: data.meeting_link,
+      notes: data.notes,
+      remindersSent: false,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at)
+    }
+  }
+
   async function fetchData() {
     try {
       const { consultations: consultationsAPI } = await import('@/lib/api-client')
@@ -47,8 +74,8 @@ export default function ConsultationsPage() {
         consultationsAPI.list('counsellors')
       ])
 
-      setUpcomingConsultations(upcomingData.consultations || [])
-      setPastConsultations(historyData.consultations || [])
+      setUpcomingConsultations((upcomingData.consultations || []).map(transformConsultation))
+      setPastConsultations((historyData.consultations || []).map(transformConsultation))
       setAvailableSlots(slotsData.slots?.map((slot: any) => ({
         ...slot,
         date: new Date(slot.date)
@@ -176,9 +203,9 @@ export default function ConsultationsPage() {
             </Card>
           ) : (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Calendar */}
-                <div className="lg:col-span-2">
+                <div className="md:col-span-1">
                   <ConsultationCalendar
                     availableSlots={availableSlots}
                     counsellors={counsellors}
@@ -189,7 +216,7 @@ export default function ConsultationsPage() {
                 </div>
 
                 {/* Booking Form */}
-                <div>
+                <div className="md:col-span-1 lg:col-span-2">
                   <Card>
                     <CardHeader>
                       <CardTitle>Consultation Details</CardTitle>

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { NotificationsPanel } from '@/components/notifications-panel'
 import { DashboardFooter } from '@/components/dashboard-footer'
+import { Toaster } from '@/components/ui/toaster'
 
 export default function DashboardLayout({
   children,
@@ -101,7 +102,7 @@ export default function DashboardLayout({
 
                 {/* Profile & Logout - Desktop */}
                 <div className="hidden md:flex items-center gap-1">
-                  <NotificationsPanel userId={userId} />
+                  <NotificationsPanel userId={userId} includeMessages={true} />
                   <Link
                     href="/dashboard/profile"
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-all"
@@ -214,6 +215,7 @@ export default function DashboardLayout({
           </div>
         </div>
       )}
+      <Toaster />
     </>
   )
 }

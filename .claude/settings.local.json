@@ -34,7 +34,9 @@
       "Bash(venvScriptspython.exe --version)",
       "Bash(timeout /t 3 /nobreak)",
       "Bash(pip install:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(Where-Object { $_Path -like \"*backend*\" })",
+      "Bash(Select-Object -First 1)"
     ],
     "deny": [],
     "ask": []

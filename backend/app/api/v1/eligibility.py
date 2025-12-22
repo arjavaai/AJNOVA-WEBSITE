@@ -111,8 +111,8 @@ async def check_eligibility(
     # Save to database
     eligibility_data = {
         "student_id": str(current_user.id),
-        "request_data": request.dict(),
-        **result.dict()
+        "request_data": request.model_dump(),
+        **result.model_dump()
     }
     
     response = supabase.table("eligibility_checks").insert(eligibility_data).execute()
@@ -134,6 +134,8 @@ async def get_my_eligibility(
         raise HTTPException(status_code=404, detail="No eligibility check found")
     
     return EligibilityResponse(**response.data[0])
+
+
 
 
 

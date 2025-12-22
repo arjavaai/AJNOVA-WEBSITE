@@ -38,12 +38,12 @@ export function Navbar() {
                 <Link href="/" className="hover:text-coral transition-colors duration-200">
                   Home
                 </Link>
-                <a href="#about" className="hover:text-coral transition-colors duration-200">
+                <Link href="/about" className="hover:text-coral transition-colors duration-200">
                   About
-                </a>
-                <a href="#services" className="hover:text-coral transition-colors duration-200">
+                </Link>
+                <Link href="/services" className="hover:text-coral transition-colors duration-200">
                   Services
-                </a>
+                </Link>
                 <Link href="/eligibility-checker" className="hover:text-coral transition-colors duration-200">
                   Preliminary Profile Assessment
                 </Link>
@@ -95,20 +95,20 @@ export function Navbar() {
                 >
                   Home
                 </Link>
-                <a 
-                  href="#about" 
+                <Link 
+                  href="/about" 
                   className="text-base font-medium text-foreground hover:text-coral transition-colors py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   About
-                </a>
-                <a 
-                  href="#services" 
+                </Link>
+                <Link 
+                  href="/services" 
                   className="text-base font-medium text-foreground hover:text-coral transition-colors py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Services
-                </a>
+                </Link>
                 <Link
                   href="/eligibility-checker"
                   className="text-base font-medium text-foreground hover:text-coral transition-colors py-2"

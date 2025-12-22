@@ -84,6 +84,13 @@ export function Footer() {
           <Instagram className="w-[18px] h-[18px] text-muted-foreground hover:text-coral cursor-pointer transition" />
         </div>
       </div>
+
+      {/* Legal Disclaimer */}
+      <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-border">
+        <p className="text-xs text-muted-foreground text-center leading-relaxed">
+          AJ NOVA provides guidance and support for educational planning and application preparation. We do not guarantee admissions, visas, or outcomes. Final decisions are made by universities, APS authorities, uni-assist, and relevant official bodies based on their criteria.
+        </p>
+      </div>
     </footer>
   )
 }

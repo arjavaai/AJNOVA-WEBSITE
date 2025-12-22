@@ -34,6 +34,7 @@ export function ConsultationCalendar({
 
   useEffect(() => {
     if (selectedDay) {
+      // Try to get slots from backend first
       const slots = availableSlots.filter(slot => {
         const slotDate = new Date(slot.date)
         slotDate.setHours(0, 0, 0, 0)
@@ -41,11 +42,35 @@ export function ConsultationCalendar({
         compareDate.setHours(0, 0, 0, 0)
         return slotDate.getTime() === compareDate.getTime() && slot.available
       })
-      setDaySlots(slots)
+      
+      // If no slots from backend, generate default time slots for weekdays
+      if (slots.length === 0) {
+        const isWeekend = selectedDay.getDay() === 0 || selectedDay.getDay() === 6
+        
+        if (!isWeekend) {
+          // Generate default time slots from 9 AM to 5 PM
+          const defaultSlots: AvailableSlot[] = [
+            '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+            '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+            '15:00', '15:30', '16:00', '16:30', '17:00'
+          ].map(time => ({
+            date: selectedDay,
+            time: time,
+            counsellorId: counsellors[0]?.id || 'default',
+            available: true
+          }))
+          
+          setDaySlots(defaultSlots)
+        } else {
+          setDaySlots([])
+        }
+      } else {
+        setDaySlots(slots)
+      }
     } else {
       setDaySlots([])
     }
-  }, [selectedDay, availableSlots])
+  }, [selectedDay, availableSlots, counsellors])
 
   function generateCalendar() {
     const days: CalendarDay[] = []
@@ -123,7 +148,7 @@ export function ConsultationCalendar({
   }
 
   function selectDay(day: CalendarDay) {
-    if (day.isPast || !day.hasAvailableSlots) return
+    if (day.isPast) return
     setSelectedDay(day.date)
   }
 
@@ -139,30 +164,29 @@ export function ConsultationCalendar({
   return (
     <div className="space-y-6">
       {/* Calendar */}
-      <Card>
-        <CardHeader>
+      <Card className="max-w-sm">
+        <CardHeader className="pb-2 px-3 pt-3">
           <div className="flex items-center justify-between">
-            <CardTitle>Select Date</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={previousMonth}>
-                <ChevronLeft className="w-4 h-4" />
+            <CardTitle className="text-sm">Select Date</CardTitle>
+            <div className="flex items-center gap-0.5">
+              <Button variant="outline" size="sm" onClick={previousMonth} className="h-6 w-6 p-0">
+                <ChevronLeft className="w-3 h-3" />
               </Button>
-              <span className="text-sm font-medium min-w-[150px] text-center">
-                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              <span className="text-[10px] font-medium min-w-[90px] text-center">
+                {monthNames[currentMonth.getMonth()].substring(0, 3)} {currentMonth.getFullYear()}
               </span>
-              <Button variant="outline" size="sm" onClick={nextMonth}>
-                <ChevronRight className="w-4 h-4" />
+              <Button variant="outline" size="sm" onClick={nextMonth} className="h-6 w-6 p-0">
+                <ChevronRight className="w-3 h-3" />
               </Button>
             </div>
           </div>
-          <CardDescription>Select a date to view available time slots</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-7 gap-2">
+        <CardContent className="p-3">
+          <div className="grid grid-cols-7 gap-0.5">
             {/* Day headers */}
             {dayNames.map(day => (
-              <div key={day} className="text-center text-sm font-medium text-muted-foreground p-2">
-                {day}
+              <div key={day} className="text-center text-[10px] font-medium text-muted-foreground py-1">
+                {day.charAt(0)}
               </div>
             ))}
             
@@ -170,47 +194,42 @@ export function ConsultationCalendar({
             {calendarDays.map((day, index) => {
               const isSelected = selectedDay && 
                 day.date.toDateString() === selectedDay.toDateString()
+              const isCurrentMonth = day.date.getMonth() === currentMonth.getMonth()
               
               return (
                 <button
                   key={index}
                   onClick={() => selectDay(day)}
-                  disabled={day.isPast || !day.hasAvailableSlots}
+                  disabled={day.isPast}
                   className={cn(
-                    "aspect-square p-2 text-sm rounded-lg transition-colors relative",
+                    "aspect-square text-[10px] rounded transition-colors relative min-h-[28px]",
                     "hover:bg-accent disabled:cursor-not-allowed",
-                    day.isToday && "ring-2 ring-primary",
+                    day.isToday && "ring-1 ring-primary",
                     isSelected && "bg-primary text-primary-foreground hover:bg-primary",
                     day.isPast && "text-muted-foreground opacity-50",
-                    !day.hasAvailableSlots && !day.isPast && "opacity-30",
-                    day.hasAvailableSlots && !isSelected && "bg-green-50 hover:bg-green-100",
-                    day.date.getMonth() !== currentMonth.getMonth() && "opacity-30"
+                    !day.isPast && isCurrentMonth && !isSelected && "bg-green-50 hover:bg-green-100",
+                    !isCurrentMonth && "opacity-30"
                   )}
                 >
-                  <div className="flex flex-col items-center justify-center h-full">
+                  <div className="flex items-center justify-center h-full">
                     <span>{day.date.getDate()}</span>
-                    {day.hasAvailableSlots && !isSelected && (
-                      <span className="text-[10px] text-green-600 font-medium">
-                        {day.slotsCount} slots
-                      </span>
-                    )}
                   </div>
                 </button>
               )
             })}
           </div>
           
-          <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-green-100 border border-green-200" />
-              <span>Available</span>
+          <div className="mt-2 flex items-center gap-2 text-[9px] text-muted-foreground">
+            <div className="flex items-center gap-0.5">
+              <div className="w-1.5 h-1.5 rounded bg-green-100 border border-green-200" />
+              <span>Avail</span>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-primary" />
+            <div className="flex items-center gap-0.5">
+              <div className="w-1.5 h-1.5 rounded bg-primary" />
               <span>Selected</span>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded ring-2 ring-primary" />
+            <div className="flex items-center gap-0.5">
+              <div className="w-1.5 h-1.5 rounded ring-1 ring-primary" />
               <span>Today</span>
             </div>
           </div>
@@ -219,24 +238,22 @@ export function ConsultationCalendar({
       
       {/* Time Slots */}
       {selectedDay && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5" />
+        <Card className="max-w-sm">
+          <CardHeader className="pb-2 px-3 pt-3">
+            <CardTitle className="flex items-center gap-1.5 text-sm">
+              <CalendarIcon className="w-3 h-3" />
               {selectedDay.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
+                month: 'short', 
                 day: 'numeric' 
               })}
             </CardTitle>
-            <CardDescription>
-              {daySlots.length} time slot{daySlots.length !== 1 ? 's' : ''} available
+            <CardDescription className="text-[10px]">
+              {daySlots.length} slot{daySlots.length !== 1 ? 's' : ''}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3">
             {daySlots.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-1.5">
                 {daySlots.map((slot, index) => {
                   const isSelected = selectedTime === slot.time
                   
@@ -245,27 +262,20 @@ export function ConsultationCalendar({
                       key={index}
                       variant={isSelected ? "default" : "outline"}
                       className={cn(
-                        "h-auto py-3 flex-col items-start",
+                        "h-8 text-[10px] p-0",
                         !isSelected && "hover:border-primary"
                       )}
                       onClick={() => onSelectSlot(slot.date, slot.time, slot.counsellorId)}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        <Clock className="w-4 h-4" />
-                        <span className="font-semibold">{slot.time}</span>
-                      </div>
-                      <span className="text-xs opacity-80">
-                        {getCounsellorName(slot.counsellorId)}
-                      </span>
+                      {slot.time}
                     </Button>
                   )
                 })}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Clock className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p>No available time slots for this date</p>
-                <p className="text-sm mt-1">Please select another date</p>
+              <div className="text-center py-4 text-muted-foreground">
+                <Clock className="w-6 h-6 mx-auto mb-1 opacity-20" />
+                <p className="text-[10px]">No slots</p>
               </div>
             )}
           </CardContent>

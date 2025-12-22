@@ -116,8 +116,8 @@ async def get_my_profile(
         profile = ProfileResponse(**db_response.data[0])
 
     print("[DEBUG] GET_PROFILE: Returning profile")
-    # Return profile (CORS middleware will add headers automatically)
-    return profile
+    # Return profile wrapped in object for consistent API response format
+    return {"profile": profile.model_dump()}
 
 
 @router.put("/me")

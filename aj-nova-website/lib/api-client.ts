@@ -166,14 +166,14 @@ export const aps = {
     const response = await apiClient.get('/api/v1/aps/me');
     return response.data;
   },
-  
+
   submit: async (formData: any) => {
     const response = await apiClient.post('/api/v1/aps/me', { form_data: formData });
     return response.data;
   },
-  
-  update: async (formData: any) => {
-    const response = await apiClient.put('/api/v1/aps/me', { form_data: formData });
+
+  update: async (data: { form_data?: any; status?: string }) => {
+    const response = await apiClient.put('/api/v1/aps/me', data);
     return response.data;
   },
 };
@@ -235,27 +235,37 @@ export const messages = {
 
 export const consultations = {
   list: async (type?: string) => {
+    // Handle special endpoints for slots and counsellors
+    if (type === 'slots') {
+      const response = await apiClient.get('/api/v1/consultations/slots');
+      return response.data;
+    }
+    if (type === 'counsellors') {
+      const response = await apiClient.get('/api/v1/consultations/counsellors');
+      return response.data;
+    }
+
     const response = await apiClient.get('/api/v1/consultations', {
       params: type ? { type } : undefined,
     });
     return response.data;
   },
-  
+
   book: async (data: any) => {
     const response = await apiClient.post('/api/v1/consultations', data);
     return response.data;
   },
-  
+
   get: async (id: string) => {
     const response = await apiClient.get(`/api/v1/consultations/${id}`);
     return response.data;
   },
-  
+
   update: async (id: string, data: any) => {
     const response = await apiClient.put(`/api/v1/consultations/${id}`, data);
     return response.data;
   },
-  
+
   cancel: async (id: string) => {
     await apiClient.delete(`/api/v1/consultations/${id}`);
   },
@@ -302,24 +312,71 @@ export const admin = {
     });
     return response.data;
   },
-  
+
   getStudents: async () => {
     const response = await apiClient.get('/api/v1/admin/students');
     return response.data;
   },
-  
+
   getReviewQueue: async () => {
     const response = await apiClient.get('/api/v1/admin/reviews');
     return response.data;
   },
-  
+
   getLeads: async () => {
     const response = await apiClient.get('/api/v1/admin/leads');
     return response.data;
   },
-  
-  getAnalytics: async () => {
-    const response = await apiClient.get('/api/v1/admin/analytics');
+
+  createLead: async (leadData: any) => {
+    const response = await apiClient.post('/api/v1/admin/leads', leadData);
+    return response.data;
+  },
+
+  updateLead: async (leadId: string, leadData: any) => {
+    const response = await apiClient.put(`/api/v1/admin/leads/${leadId}`, leadData);
+    return response.data;
+  },
+
+  updateLeadStatus: async (leadId: string, status: string) => {
+    const response = await apiClient.patch(`/api/v1/admin/leads/${leadId}/status`, { status });
+    return response.data;
+  },
+
+  assignLead: async (leadId: string, counsellorId: string) => {
+    const response = await apiClient.patch(`/api/v1/admin/leads/${leadId}/assign`, { counsellor_id: counsellorId });
+    return response.data;
+  },
+
+  getAnalytics: async (days: number = 30) => {
+    const response = await apiClient.get('/api/v1/admin/analytics', {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  getCounsellorPerformance: async () => {
+    const response = await apiClient.get('/api/v1/admin/counsellor-performance');
+    return response.data;
+  },
+
+  getAPSSubmissions: async () => {
+    const response = await apiClient.get('/api/v1/admin/aps-submissions');
+    return response.data;
+  },
+
+  getAllDocuments: async () => {
+    const response = await apiClient.get('/api/v1/admin/documents');
+    return response.data;
+  },
+
+  getAllConsultations: async () => {
+    const response = await apiClient.get('/api/v1/admin/consultations');
+    return response.data;
+  },
+
+  getAllApplications: async () => {
+    const response = await apiClient.get('/api/v1/admin/applications');
     return response.data;
   },
 };
@@ -332,6 +389,12 @@ export const admin = {
 
 // Export the axios instance for custom requests
 export default apiClient;
+
+
+
+
+
+
 
 
 

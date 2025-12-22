@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 from uuid import UUID
 
-from app.dependencies import get_supabase, get_current_user
+from app.dependencies import get_supabase, get_supabase_admin, get_current_user
 from app.models.message import MessageResponse, MessageCreate, MessageUpdate, MessageListResponse
 from app.services.notification_service import NotificationService
 
@@ -17,7 +17,7 @@ router = APIRouter()
 async def get_messages(
     conversation_id: UUID = None,
     current_user = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase)
+    supabase: Client = Depends(get_supabase_admin)
 ):
     """Get messages for current user"""
     query = supabase.table("messages").select("*")
@@ -33,7 +33,7 @@ async def get_messages(
     messages = [MessageResponse(**msg) for msg in response.data]
     
     # Count unread messages
-    unread_count = sum(1 for msg in messages if not msg.is_read and str(msg.receiver_id) == str(current_user.id))
+    unread_count = sum(1 for msg in messages if not msg.read and str(msg.receiver_id) == str(current_user.id))
     
     return MessageListResponse(
         messages=messages,
@@ -46,7 +46,7 @@ async def get_messages(
 async def send_message(
     message: MessageCreate,
     current_user = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase)
+    supabase: Client = Depends(get_supabase_admin)
 ):
     """Send a message"""
     import uuid
@@ -57,7 +57,7 @@ async def send_message(
         "conversation_id": str(message.conversation_id) if message.conversation_id else str(uuid.uuid4()),
         "message": message.message,
         "attachments": message.attachments,
-        "is_read": False
+        "read": False
     }
     
     response = supabase.table("messages").insert(message_data).execute()
@@ -77,7 +77,7 @@ async def send_message(
 async def mark_message_read(
     message_id: UUID,
     current_user = Depends(get_current_user),
-    supabase: Client = Depends(get_supabase)
+    supabase: Client = Depends(get_supabase_admin)
 ):
     """Mark message as read"""
     from datetime import datetime
@@ -95,11 +95,16 @@ async def mark_message_read(
     
     # Update message
     updated = supabase.table("messages").update({
-        "is_read": True,
+        "read": True,
         "read_at": datetime.utcnow().isoformat()
     }).eq("id", str(message_id)).execute()
     
     return MessageResponse(**updated.data[0])
+
+
+
+
+
 
 
 

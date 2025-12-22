@@ -13,7 +13,8 @@ class APSSubmissionBase(BaseModel):
 
 class APSSubmissionCreate(APSSubmissionBase):
     """APS submission creation"""
-    student_id: UUID
+    # student_id is derived from authenticated user, not from request
+    pass
 
 
 class APSSubmissionUpdate(BaseModel):
@@ -40,6 +41,12 @@ class APSSubmissionInDB(APSSubmissionBase):
 class APSSubmissionResponse(APSSubmissionInDB):
     """APS submission response"""
     pass
+
+
+
+
+
+
 
 
 

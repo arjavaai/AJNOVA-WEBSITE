@@ -36,11 +36,60 @@ export default function APSFormPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  
+
+  // Calculate form completion percentage based on required fields
+  const calculateCompletionPercentage = (formData: APSForm): number => {
+    if (!formData) return 0
+
+    const requiredFields = {
+      // Personal Details (9 fields)
+      personalFullName: !!formData.personalDetails?.fullName,
+      personalDOB: !!formData.personalDetails?.dateOfBirth,
+      personalGender: !!formData.personalDetails?.gender,
+      personalNationality: !!formData.personalDetails?.nationality,
+      personalPassport: !!formData.personalDetails?.passportNumber,
+      personalPassportExpiry: !!formData.personalDetails?.passportExpiryDate,
+      personalEmail: !!formData.personalDetails?.email,
+      personalMobile: !!formData.personalDetails?.mobileNumber,
+      personalCountry: !!formData.personalDetails?.countryOfResidence,
+
+      // Secondary Education (6 fields)
+      grade10School: !!formData.secondaryEducation?.grade10SchoolName,
+      grade10Year: !!formData.secondaryEducation?.grade10Year,
+      grade10Marks: !!formData.secondaryEducation?.grade10Marks,
+      grade12School: !!formData.secondaryEducation?.grade12SchoolName,
+      grade12Year: !!formData.secondaryEducation?.grade12Year,
+      grade12Marks: !!formData.secondaryEducation?.grade12Marks,
+
+      // Higher Education (7 fields - added study period)
+      degree: !!formData.higherEducation?.degreeAwarded,
+      university: !!formData.higherEducation?.universityName,
+      country: !!formData.higherEducation?.countryOfEducation,
+      studyFrom: !!formData.higherEducation?.studyPeriodFrom,
+      studyTo: formData.higherEducation?.isCurrent || !!formData.higherEducation?.studyPeriodTo,
+      grade: !!formData.higherEducation?.finalGrade,
+      medium: !!formData.higherEducation?.mediumOfInstruction,
+
+      // Language (1 field)
+      germanLevel: !!formData.languageTestScores?.germanLevel && formData.languageTestScores.germanLevel !== 'NONE',
+
+      // University Preferences (1 field)
+      intake: !!formData.universityPreferences?.preferredIntake,
+
+      // Declaration (1 field)
+      declaration: !!formData.declarationAccepted,
+    }
+
+    const totalFields = Object.keys(requiredFields).length
+    const completedFields = Object.values(requiredFields).filter(Boolean).length
+
+    return Math.round((completedFields / totalFields) * 100)
+  }
+
   useEffect(() => {
     fetchForm()
   }, [])
-  
+
   async function fetchForm() {
     try {
       const { aps: apsAPI } = await import('@/lib/api-client')
@@ -58,60 +107,80 @@ export default function APSFormPage() {
       }
 
       // Initialize form with default structure if data is incomplete or doesn't exist
+      // Handle both flat and nested structures (form_data)
+      const formData = data.form?.form_data || data.form || {}
+
       const initializedForm: APSForm = {
         id: data.form?.id || '',
         studentId: data.form?.studentId || data.form?.student_id || '',
         status: data.form?.status || 'NOT_STARTED',
-        completionPercentage: data.form?.completionPercentage || data.form?.completion_percentage || 0,
+        completionPercentage: formData?.completionPercentage || data.form?.completion_percentage || 0,
         personalDetails: {
-          fullName: data.form?.personalDetails?.fullName || '',
-          dateOfBirth: data.form?.personalDetails?.dateOfBirth || null,
-          gender: data.form?.personalDetails?.gender || 'MALE',
-          nationality: data.form?.personalDetails?.nationality || '',
-          passportNumber: data.form?.personalDetails?.passportNumber || '',
-          passportExpiryDate: data.form?.personalDetails?.passportExpiryDate || null,
-          email: data.form?.personalDetails?.email || '',
-          mobileNumber: data.form?.personalDetails?.mobileNumber || '',
+          fullName: formData?.personalDetails?.fullName || '',
+          dateOfBirth: formData?.personalDetails?.dateOfBirth || null,
+          gender: formData?.personalDetails?.gender || 'MALE',
+          nationality: formData?.personalDetails?.nationality || '',
+          passportNumber: formData?.personalDetails?.passportNumber || '',
+          passportExpiryDate: formData?.personalDetails?.passportExpiryDate || null,
+          email: formData?.personalDetails?.email || '',
+          mobileNumber: formData?.personalDetails?.mobileNumber || '',
+          countryOfResidence: formData?.personalDetails?.countryOfResidence || '',
         },
         secondaryEducation: {
-          grade10SchoolName: data.form?.secondaryEducation?.grade10SchoolName || '',
-          grade10Year: data.form?.secondaryEducation?.grade10Year || 0,
-          grade10Marks: data.form?.secondaryEducation?.grade10Marks || 0,
-          grade10Board: data.form?.secondaryEducation?.grade10Board || '',
-          grade12SchoolName: data.form?.secondaryEducation?.grade12SchoolName || '',
-          grade12Year: data.form?.secondaryEducation?.grade12Year || 0,
-          grade12Marks: data.form?.secondaryEducation?.grade12Marks || 0,
-          grade12Board: data.form?.secondaryEducation?.grade12Board || '',
+          grade10SchoolName: formData?.secondaryEducation?.grade10SchoolName || '',
+          grade10Year: formData?.secondaryEducation?.grade10Year || 0,
+          grade10Marks: formData?.secondaryEducation?.grade10Marks || 0,
+          grade10MarksType: formData?.secondaryEducation?.grade10MarksType || 'PERCENTAGE',
+          grade10Board: formData?.secondaryEducation?.grade10Board || '',
+          grade12SchoolName: formData?.secondaryEducation?.grade12SchoolName || '',
+          grade12Year: formData?.secondaryEducation?.grade12Year || 0,
+          grade12Marks: formData?.secondaryEducation?.grade12Marks || 0,
+          grade12MarksType: formData?.secondaryEducation?.grade12MarksType || 'PERCENTAGE',
+          grade12Board: formData?.secondaryEducation?.grade12Board || '',
         },
         higherEducation: {
-          degreeAwarded: data.form?.higherEducation?.degreeAwarded || '',
-          universityName: data.form?.higherEducation?.universityName || '',
-          countryOfEducation: data.form?.higherEducation?.countryOfEducation || '',
-          finalGrade: data.form?.higherEducation?.finalGrade || 0,
-          mediumOfInstruction: data.form?.higherEducation?.mediumOfInstruction || 'ENGLISH',
-          backlogs: data.form?.higherEducation?.backlogs || 0,
-          degreeCertificate: data.form?.higherEducation?.degreeCertificate || null,
-          transcripts: data.form?.higherEducation?.transcripts || [],
+          degreeAwarded: formData?.higherEducation?.degreeAwarded || '',
+          universityName: formData?.higherEducation?.universityName || '',
+          countryOfEducation: formData?.higherEducation?.countryOfEducation || '',
+          studyPeriodFrom: formData?.higherEducation?.studyPeriodFrom || null,
+          studyPeriodTo: formData?.higherEducation?.studyPeriodTo || null,
+          isCurrent: formData?.higherEducation?.isCurrent || false,
+          finalGrade: formData?.higherEducation?.finalGrade || 0,
+          gradeType: formData?.higherEducation?.gradeType || 'PERCENTAGE',
+          mediumOfInstruction: formData?.higherEducation?.mediumOfInstruction || 'ENGLISH',
+          backlogs: formData?.higherEducation?.backlogs || 0,
+          degreeCertificate: formData?.higherEducation?.degreeCertificate || null,
+          transcripts: formData?.higherEducation?.transcripts || [],
         },
         languageTestScores: {
-          englishTest: data.form?.languageTestScores?.englishTest || null,
-          englishScore: data.form?.languageTestScores?.englishScore || null,
-          germanLevel: data.form?.languageTestScores?.germanLevel || 'NONE',
+          englishTest: formData?.languageTestScores?.englishTest || null,
+          englishScore: formData?.languageTestScores?.englishScore || null,
+          englishTestDate: formData?.languageTestScores?.englishTestDate || null,
+          germanLevel: formData?.languageTestScores?.germanLevel || 'NONE',
+          otherExams: formData?.languageTestScores?.otherExams || [],
         },
         universityPreferences: {
-          preferredUniversity1: data.form?.universityPreferences?.preferredUniversity1 || '',
-          preferredUniversity2: data.form?.universityPreferences?.preferredUniversity2 || '',
-          preferredIntake: data.form?.universityPreferences?.preferredIntake || 'WINTER_2025',
+          preferredUniversity1: formData?.universityPreferences?.preferredUniversity1 || '',
+          preferredUniversity2: formData?.universityPreferences?.preferredUniversity2 || '',
+          preferredUniversity3: formData?.universityPreferences?.preferredUniversity3 || '',
+          preferredIntake: formData?.universityPreferences?.preferredIntake || 'WINTER_2025',
+          applicationChannel: formData?.universityPreferences?.applicationChannel || undefined,
         },
         optionalInfo: {
-          apsApplicationNumber: data.form?.optionalInfo?.apsApplicationNumber || '',
-          existingAPSCertificate: data.form?.optionalInfo?.existingAPSCertificate || null,
+          apsApplicationNumber: formData?.optionalInfo?.apsApplicationNumber || '',
+          existingAPSCertificate: formData?.optionalInfo?.existingAPSCertificate || null,
         },
-        declarationAccepted: data.form?.declarationAccepted || false,
+        declarationAccepted: formData?.declarationAccepted || false,
         submittedAt: data.form?.submittedAt || data.form?.submitted_at || null,
+        reviewedAt: data.form?.reviewedAt || data.form?.reviewed_at || null,
+        verifiedAt: data.form?.verifiedAt || data.form?.verified_at || null,
+        counsellorComments: data.form?.counsellorComments || data.form?.verification_comments || undefined,
         createdAt: data.form?.createdAt || data.form?.created_at || new Date().toISOString(),
         updatedAt: data.form?.updatedAt || data.form?.updated_at || new Date().toISOString(),
       }
+
+      // Calculate completion percentage
+      initializedForm.completionPercentage = calculateCompletionPercentage(initializedForm)
 
       setForm(initializedForm)
     } catch (error) {
@@ -127,7 +196,20 @@ export default function APSFormPage() {
     setSaving(true)
     try {
       const { aps: apsAPI } = await import('@/lib/api-client')
-      const data = await apsAPI.update({ ...form, status: 'DRAFT' })
+      // Recalculate completion before saving
+      const completionPercentage = calculateCompletionPercentage(form)
+      const formToSave = { ...form, completionPercentage }
+
+      const data = await apsAPI.update({
+        form_data: formToSave,
+        status: 'draft'
+      })
+
+      // Recalculate after receiving data from backend
+      if (data.form) {
+        data.form.completionPercentage = calculateCompletionPercentage(data.form)
+      }
+
       setForm(data.form)
       alert('Progress saved!')
     } catch (error) {
@@ -157,10 +239,12 @@ export default function APSFormPage() {
       setSubmitting(false)
     }
   }
-  
+
   function updateForm(updates: Partial<APSForm>) {
     if (!form) return
-    setForm({ ...form, ...updates })
+    const updatedForm = { ...form, ...updates }
+    const completionPercentage = calculateCompletionPercentage(updatedForm)
+    setForm({ ...updatedForm, completionPercentage })
   }
   
   if (loading) {
@@ -227,7 +311,7 @@ export default function APSFormPage() {
           <AccordionTrigger className="text-lg font-semibold">
             <div className="flex items-center gap-2">
               1. Personal & Identification Details
-              {form.personalDetails.fullName && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+              {form?.personalDetails?.fullName && <CheckCircle2 className="w-5 h-5 text-green-600" />}
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -236,8 +320,8 @@ export default function APSFormPage() {
                 <Label htmlFor="fullName">Full Name (as in passport) *</Label>
                 <Input
                   id="fullName"
-                  value={form.personalDetails.fullName}
-                  onChange={(e) => updateForm({ 
+                  value={form?.personalDetails?.fullName || ''}
+                  onChange={(e) => updateForm({
                     personalDetails: { ...form.personalDetails, fullName: e.target.value }
                   })}
                   disabled={isSubmitted}
@@ -340,12 +424,32 @@ export default function APSFormPage() {
                 <Input
                   id="mobile"
                   value={form.personalDetails.mobileNumber}
-                  onChange={(e) => updateForm({ 
+                  onChange={(e) => updateForm({
                     personalDetails: { ...form.personalDetails, mobileNumber: e.target.value }
                   })}
                   disabled={isSubmitted}
+                  placeholder="+91 9876543210"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="countryOfResidence">Country of Residence *</Label>
+                <Input
+                  id="countryOfResidence"
+                  value={form.personalDetails.countryOfResidence || ''}
+                  onChange={(e) => updateForm({
+                    personalDetails: { ...form.personalDetails, countryOfResidence: e.target.value }
+                  })}
+                  disabled={isSubmitted}
+                  placeholder="India"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-900">
+                <strong>Tip:</strong> Enter your full name exactly as in your passport. Ensure your passport is valid for at least 6 months.
+              </p>
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -355,7 +459,7 @@ export default function APSFormPage() {
           <AccordionTrigger className="text-lg font-semibold">
             <div className="flex items-center gap-2">
               2. Secondary & Higher Secondary Education
-              {form.secondaryEducation.grade10SchoolName && form.secondaryEducation.grade12SchoolName && 
+              {form?.secondaryEducation?.grade10SchoolName && form?.secondaryEducation?.grade12SchoolName &&
                 <CheckCircle2 className="w-5 h-5 text-green-600" />}
             </div>
           </AccordionTrigger>
@@ -464,16 +568,22 @@ export default function APSFormPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-900">
+                  <strong>Tip:</strong> Enter marks exactly as shown on your certificate (percentage or CGPA).
+                </p>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
-        
+
         {/* Section 3: Higher Education */}
         <AccordionItem value="higher">
           <AccordionTrigger className="text-lg font-semibold">
             <div className="flex items-center gap-2">
               3. Higher Education (Bachelor/Master)
-              {form.higherEducation.degreeAwarded && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+              {form?.higherEducation?.degreeAwarded && <CheckCircle2 className="w-5 h-5 text-green-600" />}
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -505,13 +615,58 @@ export default function APSFormPage() {
                 <Label>Country of Education *</Label>
                 <Input
                   value={form.higherEducation.countryOfEducation}
-                  onChange={(e) => updateForm({ 
+                  onChange={(e) => updateForm({
                     higherEducation: { ...form.higherEducation, countryOfEducation: e.target.value }
+                  })}
+                  disabled={isSubmitted}
+                  placeholder="India"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Study Period From *</Label>
+                <Input
+                  type="date"
+                  value={form.higherEducation.studyPeriodFrom ? new Date(form.higherEducation.studyPeriodFrom).toISOString().split('T')[0] : ''}
+                  onChange={(e) => updateForm({
+                    higherEducation: { ...form.higherEducation, studyPeriodFrom: new Date(e.target.value) }
                   })}
                   disabled={isSubmitted}
                 />
               </div>
-              
+
+              <div className="space-y-2">
+                <Label>Study Period To {!form.higherEducation.isCurrent && '*'}</Label>
+                <Input
+                  type="date"
+                  value={form.higherEducation.studyPeriodTo ? new Date(form.higherEducation.studyPeriodTo).toISOString().split('T')[0] : ''}
+                  onChange={(e) => updateForm({
+                    higherEducation: { ...form.higherEducation, studyPeriodTo: new Date(e.target.value) }
+                  })}
+                  disabled={isSubmitted || form.higherEducation.isCurrent}
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="isCurrent"
+                    checked={form.higherEducation.isCurrent}
+                    onCheckedChange={(checked) => updateForm({
+                      higherEducation: {
+                        ...form.higherEducation,
+                        isCurrent: checked as boolean,
+                        studyPeriodTo: checked ? undefined : form.higherEducation.studyPeriodTo
+                      }
+                    })}
+                    disabled={isSubmitted}
+                  />
+                  <Label htmlFor="isCurrent" className="text-sm cursor-pointer">
+                    Currently studying (not yet completed)
+                  </Label>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label>Final Grade / Percentage *</Label>
                 <Input
@@ -588,9 +743,15 @@ export default function APSFormPage() {
                 required
               />
             </div>
+
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-900">
+                <strong>Tip:</strong> Upload one file per document if possible. Ensure all uploads are clearly readable (PDF or high-quality images). Max file size: 10MB per file.
+              </p>
+            </div>
           </AccordionContent>
         </AccordionItem>
-        
+
         {/* Section 4: Language Scores */}
         <AccordionItem value="language">
           <AccordionTrigger className="text-lg font-semibold">
@@ -619,25 +780,40 @@ export default function APSFormPage() {
               </div>
               
               {form.languageTestScores.englishTest && form.languageTestScores.englishTest !== 'NONE' && (
-                <div className="space-y-2">
-                  <Label>English Score</Label>
-                  <Input
-                    type="number"
-                    step="0.5"
-                    value={form.languageTestScores.englishScore || ''}
-                    onChange={(e) => updateForm({ 
-                      languageTestScores: { ...form.languageTestScores, englishScore: parseFloat(e.target.value) }
-                    })}
-                    disabled={isSubmitted}
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label>English Score</Label>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      value={form.languageTestScores.englishScore || ''}
+                      onChange={(e) => updateForm({
+                        languageTestScores: { ...form.languageTestScores, englishScore: parseFloat(e.target.value) }
+                      })}
+                      disabled={isSubmitted}
+                      placeholder="7.5 for IELTS, 100 for TOEFL"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>English Test Date</Label>
+                    <Input
+                      type="date"
+                      value={form.languageTestScores.englishTestDate ? new Date(form.languageTestScores.englishTestDate).toISOString().split('T')[0] : ''}
+                      onChange={(e) => updateForm({
+                        languageTestScores: { ...form.languageTestScores, englishTestDate: new Date(e.target.value) }
+                      })}
+                      disabled={isSubmitted}
+                    />
+                  </div>
+                </>
               )}
               
               <div className="space-y-2">
                 <Label>German Language Level *</Label>
                 <Select
                   value={form.languageTestScores.germanLevel}
-                  onValueChange={(value: any) => updateForm({ 
+                  onValueChange={(value: any) => updateForm({
                     languageTestScores: { ...form.languageTestScores, germanLevel: value }
                   })}
                   disabled={isSubmitted}
@@ -657,9 +833,109 @@ export default function APSFormPage() {
                 </Select>
               </div>
             </div>
+
+            {/* Other Relevant Exams Section */}
+            <div className="mt-6">
+              <h4 className="font-semibold mb-4">Other Relevant Exams (Optional)</h4>
+              <p className="text-sm text-muted-foreground mb-4">Add GRE, GMAT, or other relevant test scores if applicable</p>
+
+              {form.languageTestScores.otherExams && form.languageTestScores.otherExams.length > 0 ? (
+                <div className="space-y-4">
+                  {form.languageTestScores.otherExams.map((exam, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
+                      <div className="space-y-2">
+                        <Label>Exam Type</Label>
+                        <Select
+                          value={exam.type}
+                          onValueChange={(value: any) => {
+                            const updated = [...(form.languageTestScores.otherExams || [])]
+                            updated[index] = { ...updated[index], type: value }
+                            updateForm({ languageTestScores: { ...form.languageTestScores, otherExams: updated } })
+                          }}
+                          disabled={isSubmitted}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="GRE">GRE</SelectItem>
+                            <SelectItem value="GMAT">GMAT</SelectItem>
+                            <SelectItem value="OTHER">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Score</Label>
+                        <Input
+                          type="number"
+                          value={exam.score || ''}
+                          onChange={(e) => {
+                            const updated = [...(form.languageTestScores.otherExams || [])]
+                            updated[index] = { ...updated[index], score: parseFloat(e.target.value) }
+                            updateForm({ languageTestScores: { ...form.languageTestScores, otherExams: updated } })
+                          }}
+                          disabled={isSubmitted}
+                          placeholder="320 for GRE, 700 for GMAT"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Test Date</Label>
+                        <Input
+                          type="date"
+                          value={exam.testDate ? new Date(exam.testDate).toISOString().split('T')[0] : ''}
+                          onChange={(e) => {
+                            const updated = [...(form.languageTestScores.otherExams || [])]
+                            updated[index] = { ...updated[index], testDate: new Date(e.target.value) }
+                            updateForm({ languageTestScores: { ...form.languageTestScores, otherExams: updated } })
+                          }}
+                          disabled={isSubmitted}
+                        />
+                      </div>
+
+                      {!isSubmitted && (
+                        <div className="md:col-span-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const updated = [...(form.languageTestScores.otherExams || [])]
+                              updated.splice(index, 1)
+                              updateForm({ languageTestScores: { ...form.languageTestScores, otherExams: updated } })
+                            }}
+                          >
+                            Remove Exam
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">No exams added yet</p>
+              )}
+
+              {!isSubmitted && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => {
+                    const newExam = { type: 'GRE' as const, score: 0, testDate: new Date() }
+                    const updated = [...(form.languageTestScores.otherExams || []), newExam]
+                    updateForm({ languageTestScores: { ...form.languageTestScores, otherExams: updated } })
+                  }}
+                >
+                  + Add Exam
+                </Button>
+              )}
+            </div>
           </AccordionContent>
         </AccordionItem>
-        
+
         {/* Section 5: University Preferences */}
         <AccordionItem value="preferences">
           <AccordionTrigger className="text-lg font-semibold">
@@ -682,18 +958,31 @@ export default function APSFormPage() {
                 <Label>Preferred University 2 (Optional)</Label>
                 <Input
                   value={form.universityPreferences.preferredUniversity2 || ''}
-                  onChange={(e) => updateForm({ 
+                  onChange={(e) => updateForm({
                     universityPreferences: { ...form.universityPreferences, preferredUniversity2: e.target.value }
                   })}
                   disabled={isSubmitted}
+                  placeholder="Technical University of Munich"
                 />
               </div>
-              
+
+              <div className="space-y-2">
+                <Label>Preferred University 3 (Optional)</Label>
+                <Input
+                  value={form.universityPreferences.preferredUniversity3 || ''}
+                  onChange={(e) => updateForm({
+                    universityPreferences: { ...form.universityPreferences, preferredUniversity3: e.target.value }
+                  })}
+                  disabled={isSubmitted}
+                  placeholder="RWTH Aachen University"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label>Preferred Intake *</Label>
                 <Select
                   value={form.universityPreferences.preferredIntake}
-                  onValueChange={(value) => updateForm({ 
+                  onValueChange={(value) => updateForm({
                     universityPreferences: { ...form.universityPreferences, preferredIntake: value }
                   })}
                   disabled={isSubmitted}
@@ -708,6 +997,32 @@ export default function APSFormPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label>Application Channel (Optional)</Label>
+                <Select
+                  value={form.universityPreferences.applicationChannel || ''}
+                  onValueChange={(value: any) => updateForm({
+                    universityPreferences: { ...form.universityPreferences, applicationChannel: value }
+                  })}
+                  disabled={isSubmitted}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DIRECT">Direct Application</SelectItem>
+                    <SelectItem value="UNIASSIST">Uni-Assist</SelectItem>
+                    <SelectItem value="OTHER">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-900">
+                <strong>Tip:</strong> You can name up to 3 preferred universities or leave blank if undecided.
+              </p>
             </div>
           </AccordionContent>
         </AccordionItem>

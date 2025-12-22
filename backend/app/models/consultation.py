@@ -13,10 +13,13 @@ class ConsultationBase(BaseModel):
     notes: Optional[str] = None
 
 
-class ConsultationCreate(ConsultationBase):
+class ConsultationCreate(BaseModel):
     """Consultation creation"""
-    student_id: UUID
-    counsellor_id: Optional[UUID] = None
+    scheduled_date: datetime
+    duration_minutes: Optional[int] = 30
+    consultation_type: str
+    counsellor_id: UUID
+    notes: Optional[str] = None
 
 
 class ConsultationUpdate(BaseModel):
@@ -50,6 +53,12 @@ class ConsultationListResponse(BaseModel):
     """Consultation list response"""
     consultations: list[ConsultationResponse]
     total: int
+
+
+
+
+
+
 
 
 

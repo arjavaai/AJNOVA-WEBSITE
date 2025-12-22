@@ -20,7 +20,7 @@ class MessageCreate(MessageBase):
 
 class MessageUpdate(BaseModel):
     """Message update"""
-    is_read: bool = True
+    read: bool = True
 
 
 class MessageInDB(MessageBase):
@@ -29,7 +29,7 @@ class MessageInDB(MessageBase):
     conversation_id: UUID
     sender_id: UUID
     receiver_id: UUID
-    is_read: bool = False
+    read: bool = False
     read_at: Optional[datetime] = None
     created_at: datetime
     
@@ -47,6 +47,11 @@ class MessageListResponse(BaseModel):
     messages: list[MessageResponse]
     total: int
     unread_count: int
+
+
+
+
+
 
 
 

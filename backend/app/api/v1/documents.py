@@ -43,19 +43,29 @@ async def generate_document(
     supabase: Client = Depends(get_supabase)
 ):
     """Generate AI-powered document"""
+    print(f"[DEBUG] Generate document request: {request.dict()}")
+    
     # Get user profile
     profile_response = supabase.table("profiles").select("*").eq("user_id", str(current_user.id)).execute()
     
+    print(f"[DEBUG] Profile response: {profile_response.data}")
+    
     if not profile_response.data:
-        raise HTTPException(status_code=400, detail="Please complete your profile first")
+        error_msg = "Please complete your profile first"
+        print(f"[ERROR] {error_msg}")
+        raise HTTPException(status_code=400, detail=error_msg)
     
     profile = ProfileInDB(**profile_response.data[0])
     
+    print(f"[DEBUG] Profile completion: {profile.completion_percentage}%")
+    
     # Check profile completion
     if profile.completion_percentage < 80:
+        error_msg = f"Profile must be at least 80% complete to generate documents. Current: {profile.completion_percentage}%"
+        print(f"[ERROR] {error_msg}")
         raise HTTPException(
             status_code=400,
-            detail=f"Profile must be at least 80% complete to generate documents. Current: {profile.completion_percentage}%"
+            detail=error_msg
         )
     
     # Generate document with AI
@@ -248,6 +258,11 @@ async def upload_document_file(
     updated = supabase.table("documents").update(file_data).eq("id", str(document_id)).execute()
     
     return DocumentResponse(**updated.data[0])
+
+
+
+
+
 
 
 
