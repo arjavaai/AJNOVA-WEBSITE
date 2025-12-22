@@ -272,6 +272,7 @@ export default function LeadsManagementPage() {
               </DialogContent>
             </Dialog>
           </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
