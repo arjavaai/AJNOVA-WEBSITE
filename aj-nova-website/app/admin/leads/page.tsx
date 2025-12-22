@@ -269,9 +269,9 @@ export default function LeadsManagementPage() {
                   </Button>
                   <Button onClick={handleAddLead}>Add Lead</Button>
                 </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+              </DialogContent>
+            </Dialog>
+          </div>
       </div>
 
       {/* Stats Cards */}
