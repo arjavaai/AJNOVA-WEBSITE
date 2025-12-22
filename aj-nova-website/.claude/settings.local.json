@@ -18,7 +18,8 @@
       "Bash(timeout /t 10 /nobreak)",
       "Bash(python:*)",
       "Bash(dir:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "ask": []
