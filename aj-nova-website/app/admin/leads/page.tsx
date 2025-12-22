@@ -201,7 +201,7 @@ export default function LeadsManagementPage() {
                   Add Lead
                 </Button>
               </DialogTrigger>
-            <DialogContent>
+              <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Lead</DialogTitle>
                 <DialogDescription>
