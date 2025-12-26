@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/navbar"
 import { EnhancedHeroSection } from "@/components/enhanced-hero-section"
-import { StatsCounter } from "@/components/stats-counter"
+import { ServicesSection } from "@/components/services-section"
 import { FeaturesGrid } from "@/components/features-grid"
 import { InteractiveJourneyTimeline } from "@/components/interactive-journey-timeline"
 import { StudentSuccessStories } from "@/components/student-success-stories"
@@ -15,7 +15,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground selection:bg-coral/20">
       <Navbar />
       <EnhancedHeroSection />
-      <StatsCounter />
+      <ServicesSection />
       <FeaturesGrid />
       <InteractiveJourneyTimeline />
       <StudentSuccessStories />

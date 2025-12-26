@@ -61,7 +61,7 @@ pnpm dev
 **Full Stack (Frontend + Backend):**
 ```bash
 # Start Backend (from project root)
-START_BACKEND.bat
+scripts/START_BACKEND.bat
 
 # In a new terminal, start Frontend
 cd aj-nova-website
@@ -74,11 +74,39 @@ npm run dev
 
 That's it! The application should now be running locally.
 
+## Deployment
+
+### Backend Deployment (Replit)
+
+The backend is ready to deploy to Replit:
+
+```bash
+cd backend
+# Follow the guide in REPLIT_DEPLOYMENT.md
+```
+
+**[→ Backend Replit Deployment Guide](./backend/REPLIT_DEPLOYMENT.md)**
+
+### Frontend Deployment (Vercel)
+
+The frontend is already deployed on Vercel. To deploy updates:
+
+```bash
+cd aj-nova-website
+git push origin main  # Auto-deploys to Vercel
+```
+
+Configuration:
+- Build Command: `npm run build`
+- Output Directory: `.next`
+- Install Command: `npm install`
+- Environment Variables: Set `NEXT_PUBLIC_API_URL` to your Replit backend URL
+
 ## Project Structure
 
 ```
 AJNOVA-WEBSITE/
-├── aj-nova-website/          # Next.js marketing website & student dashboard
+├── aj-nova-website/          # Frontend - Next.js marketing website & student dashboard
 │   ├── app/                  # Next.js 16 app directory
 │   │   ├── api/             # API routes
 │   │   │   └── documents/  # Document generation & management APIs
@@ -110,30 +138,40 @@ AJNOVA-WEBSITE/
 │   ├── TEST_GUIDE.md             # Testing instructions
 │   └── QUICK_START.md            # Quick setup guide
 │
-├── backend/                # FastAPI backend (Python 3.13)
-│   ├── app/
-│   │   ├── main.py               # FastAPI application entry point
-│   │   ├── main_working.py       # Current working version
-│   │   ├── config.py             # Configuration settings
-│   │   ├── dependencies.py       # Dependency injection
-│   │   ├── api/v1/              # API endpoints
-│   │   │   ├── auth.py          # Google OAuth authentication
-│   │   │   ├── profiles.py      # Profile management
-│   │   │   ├── documents.py     # Document & AI generation
-│   │   │   ├── eligibility.py   # Eligibility checker
-│   │   │   └── ...              # Other endpoints
-│   │   ├── models/              # Pydantic models
-│   │   ├── services/            # Business logic
-│   │   │   ├── ai_service.py   # Google Gemini integration
-│   │   │   ├── auth_service.py # Authentication logic
+├── backend/                # Backend - FastAPI (Python 3.11+) - Ready for Replit
+│   ├── app/                    # Application code
+│   │   ├── main.py            # FastAPI entry (DO NOT USE - deprecated)
+│   │   ├── config.py          # Configuration settings
+│   │   ├── api/v1/            # API endpoints
+│   │   │   ├── auth.py        # Google OAuth authentication
+│   │   │   ├── profiles.py    # Profile management
+│   │   │   ├── documents.py   # Document & AI generation
+│   │   │   ├── eligibility.py # Eligibility checker
+│   │   │   └── ...            # Other endpoints
+│   │   ├── models/            # Pydantic models
+│   │   ├── services/          # Business logic
+│   │   │   ├── ai_service.py  # Google Gemini integration
 │   │   │   └── ...
-│   │   └── middleware/          # Custom middleware
-│   ├── venv/                    # Python 3.13 virtual environment
-│   ├── requirements.txt         # Python dependencies
-│   ├── .env.example            # Environment template
-│   └── README.md               # Backend documentation
+│   │   └── middleware/        # Custom middleware
+│   ├── supabase/              # Database migrations
+│   ├── main.py                # ✅ Main entry point (USE THIS)
+│   ├── requirements.txt       # Python dependencies
+│   ├── .env                   # Environment variables (DO NOT COMMIT)
+│   ├── env.example            # Environment template
+│   ├── .replit                # Replit configuration
+│   ├── replit.nix             # Replit dependencies
+│   ├── backend-test.html      # API testing page
+│   └── README.md              # Backend documentation
 │
-├── START_BACKEND.bat       # Windows script to start backend
+├── docs/                   # Project Documentation
+│   ├── guides/             # Fix and troubleshooting guides
+│   ├── setup/              # Setup and quick start guides
+│   └── implementation/     # Implementation summaries
+│
+├── scripts/                # Utility scripts
+│   ├── START_BACKEND_CLEAN.bat    # Clean backend start
+│   ├── KILL_ALL_BACKENDS.bat      # Kill running backends
+│   └── RESTART_EVERYTHING.bat     # Restart all services
 ├── PRD/                    # Product Requirements Documents
 │   ├── overview.md         # High-level project vision
 │   ├── architecture.md     # System architecture

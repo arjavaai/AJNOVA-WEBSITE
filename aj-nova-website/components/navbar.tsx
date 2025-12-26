@@ -47,9 +47,6 @@ export function Navbar() {
                 <Link href="/eligibility-checker" className="hover:text-coral transition-colors duration-200">
                   Preliminary Profile Assessment
                 </Link>
-                <Link href="/ects-calculator" className="hover:text-coral transition-colors duration-200">
-                  ECTS Calculator
-                </Link>
                 <Link href="/contact" className="hover:text-coral transition-colors duration-200">
                   Contact
                 </Link>
@@ -115,13 +112,6 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Preliminary Profile Assessment
-                </Link>
-                <Link
-                  href="/ects-calculator"
-                  className="text-base font-medium text-foreground hover:text-coral transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  ECTS Calculator
                 </Link>
                 <Link
                   href="/contact"

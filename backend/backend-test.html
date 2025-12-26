@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #0070f3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0051cc;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Backend Connection Diagnostic Tool</h1>
+    
+    <div class="test-box">
+        <h2>Test 1: Basic Backend Connection</h2>
+        <p>Tests if the backend is reachable at all</p>
+        <button onclick="test1()">Run Test 1</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Test 2: CORS Preflight (OPTIONS)</h2>
+        <p>Tests if CORS is properly configured for OPTIONS requests</p>
+        <button onclick="test2()">Run Test 2</button>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Test 3: Profile Endpoint (Unauthenticated)</h2>
+        <p>Tests the profile endpoint without authentication</p>
+        <button onclick="test3()">Run Test 3</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Test 4: Check Network Logs</h2>
+        <p>Open your browser Developer Tools (F12) → Network tab, then run this test</p>
+        <button onclick="test4()">Run Test 4</button>
+        <div id="result4" class="result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>📊 Summary</h2>
+        <div id="summary" class="result info">
+            Click the test buttons above to diagnose the connection issue.
+        </div>
+    </div>
+
+    <script>
+        async function test1() {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.innerHTML = '⏳ Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    ✅ SUCCESS!<br>
+                    Status: ${response.status}<br>
+                    Response: ${JSON.stringify(data, null, 2)}
+                `;
+                
+                updateSummary('test1', true);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    ❌ FAILED!<br>
+                    Error: ${error.message}<br>
+                    <br>
+                    This means your browser cannot reach the backend at all.<br>
+                    Possible causes:<br>
+                    - Backend is not running<br>
+                    - Windows Firewall is blocking<br>
+                    - Port 8000 is not accessible
+                `;
+                
+                updateSummary('test1', false, error.message);
+            }
+        }
+
+        async function test2() {
+            const resultDiv = document.getElementById('result2');
+            resultDiv.innerHTML = '⏳ Testing CORS preflight...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/profiles/me', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': 'http://localhost:3000',
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'authorization,content-type'
+                    }
+                });
+                
+                const allowOrigin = response.headers.get('Access-Control-Allow-Origin');
+                const allowMethods = response.headers.get('Access-Control-Allow-Methods');
+                const allowHeaders = response.headers.get('Access-Control-Allow-Headers');
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    ✅ CORS Preflight OK!<br>
+                    Status: ${response.status}<br>
+                    Allow-Origin: ${allowOrigin || 'NOT SET ⚠️'}<br>
+                    Allow-Methods: ${allowMethods || 'NOT SET ⚠️'}<br>
+                    Allow-Headers: ${allowHeaders || 'NOT SET ⚠️'}
+                `;
+                
+                updateSummary('test2', true);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    ❌ CORS Preflight FAILED!<br>
+                    Error: ${error.message}<br>
+                    <br>
+                    This means CORS is not properly configured or the backend is unreachable.
+                `;
+                
+                updateSummary('test2', false, error.message);
+            }
+        }
+
+        async function test3() {
+            const resultDiv = document.getElementById('result3');
+            resultDiv.innerHTML = '⏳ Testing profile endpoint...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/profiles/me', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                let data = null;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    data = await response.text();
+                }
+                
+                if (response.status === 401 || response.status === 403) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        ✅ Backend is reachable!<br>
+                        Status: ${response.status} (Expected - you're not authenticated)<br>
+                        Response: ${JSON.stringify(data, null, 2)}<br>
+                        <br>
+                        This is GOOD! It means:<br>
+                        - Backend is running ✅<br>
+                        - CORS is working ✅<br>
+                        - You just need to authenticate ✅
+                    `;
+                    updateSummary('test3', true, 'Backend reachable, authentication required');
+                } else if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        ✅ SUCCESS!<br>
+                        Status: ${response.status}<br>
+                        Response: ${JSON.stringify(data, null, 2)}
+                    `;
+                    updateSummary('test3', true);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        ⚠️ Unexpected Status<br>
+                        Status: ${response.status}<br>
+                        Response: ${JSON.stringify(data, null, 2)}
+                    `;
+                    updateSummary('test3', false, `Status ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    ❌ FAILED!<br>
+                    Error: ${error.message}<br>
+                    <br>
+                    The request never reached the backend.<br>
+                    Check if Test 1 passed.
+                `;
+                
+                updateSummary('test3', false, error.message);
+            }
+        }
+
+        async function test4() {
+            const resultDiv = document.getElementById('result4');
+            resultDiv.className = 'result info';
+            resultDiv.innerHTML = `
+                📊 Check your Network tab now!<br>
+                <br>
+                Making a test request...<br>
+            `;
+            
+            try {
+                await fetch('http://localhost:8000/api/v1/profiles/me');
+            } catch (e) {
+                // Ignore error, we just want to see it in Network tab
+            }
+            
+            resultDiv.innerHTML += `
+                <br>
+                ✅ Request sent!<br>
+                <br>
+                Look at the Network tab:<br>
+                1. Find the request to "profiles/me"<br>
+                2. Check if it's red (failed) or grey (cancelled)<br>
+                3. Click on it to see Headers and Response<br>
+                4. Look for CORS errors in the Console tab<br>
+                <br>
+                Take a screenshot and check:<br>
+                - Request Method<br>
+                - Status Code<br>
+                - Response Headers (especially Access-Control-Allow-Origin)
+            `;
+        }
+
+        const testResults = {};
+        
+        function updateSummary(testName, passed, message = '') {
+            testResults[testName] = { passed, message };
+            
+            const summaryDiv = document.getElementById('summary');
+            let summary = '<strong>Test Results:</strong><br><br>';
+            
+            for (const [test, result] of Object.entries(testResults)) {
+                const icon = result.passed ? '✅' : '❌';
+                summary += `${icon} ${test}: ${result.passed ? 'PASSED' : 'FAILED'}`;
+                if (result.message) {
+                    summary += ` (${result.message})`;
+                }
+                summary += '<br>';
+            }
+            
+            summary += '<br>';
+            
+            if (testResults.test1 && !testResults.test1.passed) {
+                summary += `
+                    <strong>🔴 Critical Issue:</strong> Backend is not reachable!<br>
+                    <br>
+                    Actions to take:<br>
+                    1. Check if backend is running (go to terminal)<br>
+                    2. Verify port 8000 is listening: netstat -ano | findstr :8000<br>
+                    3. Try visiting http://localhost:8000/ directly in your browser<br>
+                    4. Check Windows Firewall settings<br>
+                `;
+            } else if (testResults.test1 && testResults.test1.passed) {
+                summary += `
+                    <strong>🟢 Good News:</strong> Backend is reachable!<br>
+                    <br>
+                    Next steps:<br>
+                    1. Make sure you're logged in at http://localhost:3000/test-auth<br>
+                    2. Get your access token from Supabase<br>
+                    3. Try the authenticated API call with the token<br>
+                `;
+            }
+            
+            summaryDiv.className = 'result info';
+            summaryDiv.innerHTML = summary;
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

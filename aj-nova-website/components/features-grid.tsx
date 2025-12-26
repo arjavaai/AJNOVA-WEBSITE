@@ -37,7 +37,7 @@ const features = [
 
 export function FeaturesGrid() {
   return (
-    <section className="py-32 px-6 relative z-10 bg-card">
+    <section className="pt-24 pb-12 px-6 relative z-10 bg-card">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-20">
           <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 text-foreground">Everything you need</h2>
