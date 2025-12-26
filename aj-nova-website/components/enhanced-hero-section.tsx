@@ -7,7 +7,7 @@ import Image from 'next/image'
 
 export function EnhancedHeroSection() {
   return (
-    <section className="relative pt-28 pb-8 lg:pt-36 lg:pb-12 overflow-hidden bg-background">
+    <section className="relative pt-24 pb-12 lg:pt-36 lg:pb-12 overflow-hidden bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
@@ -49,7 +49,7 @@ export function EnhancedHeroSection() {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative w-full h-[500px] lg:h-[650px] flex items-center justify-center"
+            className="relative w-full h-[400px] lg:h-[650px] flex items-center justify-center"
           >
             {/* Soft Background Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-coral/10 rounded-full blur-3xl opacity-60" />
@@ -271,7 +271,7 @@ export function EnhancedHeroSection() {
             </motion.div>
 
             {/* Main Image */}
-            <div className="relative z-10 w-full h-full flex items-center justify-center -translate-x-24">
+            <div className="relative z-10 w-full h-full flex items-center justify-center lg:-translate-x-24">
               <Image
                 src="/images for the website/Image 16.png"
                 alt="Happy student"
