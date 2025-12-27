@@ -6,6 +6,7 @@ modules = ["python-3.11"]
 channel = "stable-24_05"
 
 [deployment]
+build = ["sh", "-c", "pip install --upgrade pip && pip install -r requirements.txt"]
 run = ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000"]
 deploymentTarget = "cloudrun"
 

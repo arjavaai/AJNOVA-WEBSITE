@@ -34,9 +34,22 @@ This guide will walk you through deploying the AJ NOVA backend API to Replit.
 
 ## Configuration
 
-### 1. Set Environment Variables (Secrets)
+### 1. Set Environment Variables
 
-In Replit, go to the "Tools" panel → "Secrets" and add:
+**IMPORTANT**: There are TWO places to set environment variables in Replit:
+
+#### A. For Development (Tools → Secrets)
+When running your app in development mode in Replit, set secrets in the "Tools" panel → "Secrets".
+
+#### B. For Production Deployment (Deployment Settings)
+**This is what you need for deployments!** When deploying, you MUST set environment variables in:
+1. Click on your Repl
+2. Go to "Deployments" tab
+3. Click on your deployment (or create one)
+4. Go to "Environment Variables" section
+5. Add all required environment variables listed below
+
+**Required Environment Variables** (add these to deployment settings):
 
 ```bash
 # Environment
@@ -95,6 +108,7 @@ modules = ["python-3.11"]
 channel = "stable-24_05"
 
 [deployment]
+build = ["sh", "-c", "pip install --upgrade pip && pip install -r requirements.txt"]
 run = ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000"]
 deploymentTarget = "cloudrun"
 
@@ -102,6 +116,8 @@ deploymentTarget = "cloudrun"
 localPort = 8000
 externalPort = 80
 ```
+
+**Note**: The `build` step is crucial - it installs all Python dependencies during deployment.
 
 ### 3. Verify `replit.nix` Dependencies
 
@@ -171,6 +187,25 @@ In Replit, check the "Console" tab to monitor:
 - Performance metrics
 
 ## Troubleshooting
+
+### Crash Loop / Deployment Failing
+
+If you see "crash loop detected" errors:
+
+1. **Missing Environment Variables**: Make sure ALL required environment variables are set in the Deployment → Environment Variables section (NOT just in development secrets)
+
+2. **Missing Build Step**: Ensure your `.replit` file has the build step:
+   ```toml
+   [deployment]
+   build = ["sh", "-c", "pip install --upgrade pip && pip install -r requirements.txt"]
+   ```
+
+3. **Check Logs**: In the deployment console, look for the actual error. Common issues:
+   - `ModuleNotFoundError`: Dependencies not installed (check build step)
+   - Import errors: Missing environment variables
+   - Port binding errors: Use `0.0.0.0` not `localhost`
+
+4. **Test Locally First**: Run the app in development mode first to verify all imports work before deploying.
 
 ### Port Issues
 

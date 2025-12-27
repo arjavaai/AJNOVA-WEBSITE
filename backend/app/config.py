@@ -75,8 +75,13 @@ class Settings(BaseSettings):
     ]
     
     class Config:
+        # Only load .env file if it exists (for local development)
+        # In production, use environment variables set in deployment platform
         env_file = ".env"
+        env_file_encoding = "utf-8"
         case_sensitive = True
+        # Don't raise error if .env file doesn't exist
+        extra = "ignore"
 
 
 @lru_cache()
@@ -87,6 +92,7 @@ def get_settings() -> Settings:
 
 # Global settings instance
 settings = get_settings()
+
 
 
 
