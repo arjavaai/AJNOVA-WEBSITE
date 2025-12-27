@@ -29,10 +29,22 @@ class CORSMiddlewareWrapper:
             await self.app(scope, receive, send)
             return
 
+        # Get origin from request headers
+        origin = None
+        for header_name, header_value in scope.get("headers", []):
+            if header_name == b"origin":
+                origin = header_value.decode()
+                break
+
+        # Check if origin is allowed
+        allowed_origin = origin if origin and self._is_allowed_origin(origin) else settings.FRONTEND_URL.encode()
+        if isinstance(allowed_origin, str):
+            allowed_origin = allowed_origin.encode()
+
         # Handle CORS preflight requests
         if scope["method"] == "OPTIONS":
             headers = [
-                [b"access-control-allow-origin", b"http://localhost:3000"],
+                [b"access-control-allow-origin", allowed_origin],
                 [b"access-control-allow-credentials", b"true"],
                 [b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"],
                 [b"access-control-allow-headers", b"*"],
@@ -55,7 +67,7 @@ class CORSMiddlewareWrapper:
                 headers = list(message.get("headers", []))
                 # Add CORS headers
                 cors_headers = [
-                    [b"access-control-allow-origin", b"http://localhost:3000"],
+                    [b"access-control-allow-origin", allowed_origin],
                     [b"access-control-allow-credentials", b"true"],
                     [b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"],
                     [b"access-control-allow-headers", b"*"],
@@ -65,6 +77,10 @@ class CORSMiddlewareWrapper:
             await send(message)
 
         await self.app(scope, receive, send_with_cors)
+
+    def _is_allowed_origin(self, origin: str) -> bool:
+        """Check if origin is in allowed CORS origins"""
+        return origin in settings.CORS_ORIGINS
 
 # Root endpoint
 @app.get("/")
